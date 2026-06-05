@@ -7,7 +7,7 @@ struct CueCamApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ScriptListView()
+            RootContainer()
                 .environmentObject(store)
                 .environmentObject(purchases)
                 .preferredColorScheme(.dark)
@@ -15,6 +15,26 @@ struct CueCamApp: App {
                 .task {
                     await purchases.start()
                 }
+        }
+    }
+}
+
+/// Shows the animated splash on launch, then crossfades into the app.
+private struct RootContainer: View {
+    @State private var showSplash = true
+
+    var body: some View {
+        ZStack {
+            ScriptListView()
+            if showSplash {
+                SplashView()
+                    .transition(.opacity)
+                    .zIndex(1)
+            }
+        }
+        .task {
+            try? await Task.sleep(nanoseconds: 1_900_000_000)
+            withAnimation(.easeInOut(duration: 0.55)) { showSplash = false }
         }
     }
 }

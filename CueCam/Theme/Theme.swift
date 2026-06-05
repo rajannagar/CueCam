@@ -25,6 +25,13 @@ enum Theme {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+
+    /// Deep navy → blue used for the app badge / logo, matching the app icon.
+    static let brandBadge = LinearGradient(
+        colors: [Color(red: 0.06, green: 0.08, blue: 0.16), Color(red: 0.11, green: 0.30, blue: 0.55)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
 }
 
 /// A subtle ambient backdrop — a soft accent glow over deep charcoal.

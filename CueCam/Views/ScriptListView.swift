@@ -21,7 +21,7 @@ struct ScriptListView: View {
                     list
                 }
             }
-            .navigationTitle("Scripts")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -29,6 +29,9 @@ struct ScriptListView: View {
                     } label: {
                         Image(systemName: "gearshape")
                     }
+                }
+                ToolbarItem(placement: .principal) {
+                    CueCamWordmark(logoSize: 22, fontSize: 18)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -60,6 +63,13 @@ struct ScriptListView: View {
     private var list: some View {
         ScrollView {
             LazyVStack(spacing: 14) {
+                HStack {
+                    Text("Scripts")
+                        .font(.largeTitle.weight(.bold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                }
+                .padding(.top, 4)
                 if !purchases.isPro {
                     freeBanner
                 }
