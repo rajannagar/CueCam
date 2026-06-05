@@ -70,6 +70,8 @@ final class CameraController: NSObject, ObservableObject {
         }
         if session.canAddOutput(movieOutput) {
             session.addOutput(movieOutput)
+            // Record a single continuous file rather than fragmenting it.
+            movieOutput.movieFragmentInterval = .invalid
         }
         session.commitConfiguration()
         session.startRunning()
@@ -143,14 +145,22 @@ extension CameraController: AVCaptureFileOutputRecordingDelegate {
                                 didFinishRecordingTo outputFileURL: URL,
                                 from connections: [AVCaptureConnection],
                                 error: Error?) {
+        // A non-nil error does NOT always mean failure. AVFoundation reports a
+        // "successfully finished" flag in the error's userInfo for normal stops.
+        let nsError = error as NSError?
+        let finishedOK = (nsError?.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool) ?? false
+        let succeeded = (error == nil) || finishedOK
+        let code = nsError?.code ?? 0
+
         Task { @MainActor in
             self.isRecording = false
-            guard error == nil else {
-                self.message = "Recording failed. Please try again."
+            if succeeded {
+                await self.save(outputFileURL)
+            } else {
+                self.message = "Recording failed (code \(code)). Please try again."
                 self.lastSavedOK = false
-                return
+                try? FileManager.default.removeItem(at: outputFileURL)
             }
-            await self.save(outputFileURL)
         }
     }
 
