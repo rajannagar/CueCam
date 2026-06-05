@@ -1,5 +1,5 @@
 {
-  "identifier" : "TeleprompterProConfig",
+  "identifier" : "CueCamConfig",
   "nonRenewingSubscriptions" : [],
   "products" : [
     {
@@ -19,7 +19,7 @@
     }
   ],
   "settings" : {
-    "_applicationInternalID" : "TeleprompterPro"
+    "_applicationInternalID" : "CueCam"
   },
   "subscriptionGroups" : [],
   "version" : {

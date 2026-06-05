@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		1A0000000000000000000006 /* TeleprompterPro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TeleprompterPro.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A0000000000000000000006 /* CueCam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CueCam.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		1A0000000000000000000004 /* TeleprompterPro */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = TeleprompterPro; sourceTree = "<group>"; };
+		1A0000000000000000000004 /* CueCam */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CueCam; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,7 +28,7 @@
 		1A0000000000000000000002 = {
 			isa = PBXGroup;
 			children = (
-				1A0000000000000000000004 /* TeleprompterPro */,
+				1A0000000000000000000004 /* CueCam */,
 				1A0000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -36,7 +36,7 @@
 		1A0000000000000000000003 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1A0000000000000000000006 /* TeleprompterPro.app */,
+				1A0000000000000000000006 /* CueCam.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -44,9 +44,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		1A0000000000000000000005 /* TeleprompterPro */ = {
+		1A0000000000000000000005 /* CueCam */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1A000000000000000000000A /* Build configuration list for PBXNativeTarget "TeleprompterPro" */;
+			buildConfigurationList = 1A000000000000000000000A /* Build configuration list for PBXNativeTarget "CueCam" */;
 			buildPhases = (
 				1A0000000000000000000007 /* Sources */,
 				1A0000000000000000000008 /* Frameworks */,
@@ -57,11 +57,11 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				1A0000000000000000000004 /* TeleprompterPro */,
+				1A0000000000000000000004 /* CueCam */,
 			);
-			name = TeleprompterPro;
-			productName = TeleprompterPro;
-			productReference = 1A0000000000000000000006 /* TeleprompterPro.app */;
+			name = CueCam;
+			productName = CueCam;
+			productReference = 1A0000000000000000000006 /* CueCam.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -79,7 +79,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 1A000000000000000000000B /* Build configuration list for PBXProject "TeleprompterPro" */;
+			buildConfigurationList = 1A000000000000000000000B /* Build configuration list for PBXProject "CueCam" */;
 			compatibilityVersion = "Xcode 16.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -93,7 +93,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				1A0000000000000000000005 /* TeleprompterPro */,
+				1A0000000000000000000005 /* CueCam */,
 			);
 		};
 /* End PBXProject section */
@@ -226,7 +226,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1A000000000000000000000A /* Build configuration list for PBXNativeTarget "TeleprompterPro" */ = {
+		1A000000000000000000000A /* Build configuration list for PBXNativeTarget "CueCam" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1A000000000000000000000C /* Debug */,
@@ -235,7 +235,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1A000000000000000000000B /* Build configuration list for PBXProject "TeleprompterPro" */ = {
+		1A000000000000000000000B /* Build configuration list for PBXProject "CueCam" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1A000000000000000000000E /* Debug */,

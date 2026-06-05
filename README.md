@@ -25,8 +25,7 @@ Built in SwiftUI with a StoreKit 2 one-time unlock.
 - Product ID: `com.rajannagar.CueCam.pro`
 
 ## Run it
-1. Open `TeleprompterPro.xcodeproj` in Xcode (the on-disk name is unchanged; the app
-   displays as **CueCam**).
+1. Open `CueCam.xcodeproj` in Xcode.
 2. Your signing team is already set. Pick your iPhone as the destination and press Run.
 3. Camera, microphone, and speech features need a real device — they do not work in the
    Simulator.
@@ -46,8 +45,8 @@ Built in SwiftUI with a StoreKit 2 one-time unlock.
 
 ## Project layout
 ```
-TeleprompterPro/
-  TeleprompterProApp.swift      App entry
+CueCam/
+  CueCamApp.swift      App entry
   Models/                       Script, local store, themes & fonts
   Store/PurchaseManager.swift   StoreKit 2 unlock
   Prompter/                     Engine, camera, voice-follow, shared canvas + settings

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct TeleprompterProApp: App {
+struct CueCamApp: App {
     @StateObject private var store = ScriptStore()
     @StateObject private var purchases = PurchaseManager()
 
