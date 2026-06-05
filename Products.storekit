@@ -9,11 +9,11 @@
       "localizations" : [
         {
           "description" : "Unlimited scripts, mirror mode, and themes. One-time purchase.",
-          "displayName" : "Teleprompter Pro",
+          "displayName" : "CueCam Pro",
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.rajannagar.TeleprompterPro.pro",
+      "productID" : "com.rajannagar.CueCam.pro",
       "referenceName" : "Pro Unlock",
       "type" : "NonConsumable"
     }

@@ -65,15 +65,15 @@ final class ScriptStore: ObservableObject {
 
     private func seedSample() {
         let sample = Script(
-            title: "Welcome to Teleprompter Pro",
+            title: "Welcome to CueCam",
             body: """
-            Hey there — welcome to Teleprompter Pro.
+            Hey there, and welcome to CueCam.
 
-            This is your stage. Paste any script here, hit the play button, and the words will glide up the screen at a pace you control.
+            Tap the camera button to record yourself while these words scroll right over the live camera. Your script stays on screen to read, but it never shows up in the video.
 
-            Tap once anywhere to pause or resume. Drag up or down to reposition. Use the controls to dial in the speed, the text size, and mirror mode for camera rigs.
+            Want to read on screen instead? Tap the text button. Either way: tap once to pause or resume, drag up or down to reposition, and open the sliders to pick a theme, font, speed, and text size.
 
-            When you're ready, replace this text with your own. Break a leg.
+            Turn on voice-follow and the words move as you speak. When you're ready, replace this text with your own. Break a leg.
             """
         )
         scripts = [sample]

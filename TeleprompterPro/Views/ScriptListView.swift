@@ -6,6 +6,7 @@ struct ScriptListView: View {
 
     @State private var editingScript: Script?
     @State private var playingScript: Script?
+    @State private var filmingScript: Script?
     @State private var showPaywall = false
     @State private var showSettings = false
 
@@ -44,6 +45,9 @@ struct ScriptListView: View {
             .fullScreenCover(item: $playingScript) { script in
                 TeleprompterView(script: script)
             }
+            .fullScreenCover(item: $filmingScript) { script in
+                CameraTeleprompterView(script: script)
+            }
             .sheet(isPresented: $showPaywall) {
                 PaywallView()
             }
@@ -62,10 +66,17 @@ struct ScriptListView: View {
                 ForEach(store.scripts) { script in
                     ScriptCard(
                         script: script,
+                        onFilm: { filmingScript = script },
                         onPlay: { playingScript = script },
                         onEdit: { editingScript = script }
                     )
                     .contextMenu {
+                        Button { filmingScript = script } label: {
+                            Label("Record with camera", systemImage: "camera")
+                        }
+                        Button { playingScript = script } label: {
+                            Label("Read on screen", systemImage: "text.alignleft")
+                        }
                         Button { editingScript = script } label: {
                             Label("Edit", systemImage: "pencil")
                         }
@@ -147,6 +158,7 @@ struct ScriptListView: View {
 
 private struct ScriptCard: View {
     let script: Script
+    let onFilm: () -> Void
     let onPlay: () -> Void
     let onEdit: () -> Void
 
@@ -163,14 +175,24 @@ private struct ScriptCard: View {
                         .foregroundStyle(Theme.textFaint)
                 }
                 Spacer()
-                Button(action: onPlay) {
-                    Image(systemName: "play.fill")
-                        .font(.headline)
-                        .foregroundStyle(.black)
-                        .frame(width: 44, height: 44)
-                        .background(Theme.accentGradient, in: Circle())
+                HStack(spacing: 10) {
+                    Button(action: onPlay) {
+                        Image(systemName: "text.alignleft")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Theme.textPrimary)
+                            .frame(width: 44, height: 44)
+                            .background(.white.opacity(0.08), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    Button(action: onFilm) {
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.black)
+                            .frame(width: 44, height: 44)
+                            .background(Theme.accentGradient, in: Circle())
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
 
             Text(script.preview)

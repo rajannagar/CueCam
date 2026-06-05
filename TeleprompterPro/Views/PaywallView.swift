@@ -5,10 +5,10 @@ struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
 
     private let features: [(String, String, String)] = [
-        ("infinity", "Unlimited scripts", "Save as many as you want — no caps."),
-        ("rectangle.lefthalf.filled", "Mirror mode", "Flip text for beam-splitter camera rigs."),
-        ("speedometer", "Speed & size presets", "Dial in the exact scroll that fits your delivery."),
-        ("paintbrush.pointed.fill", "Themes", "Make the stage yours.")
+        ("infinity", "Unlimited scripts", "Save as many as you want, no caps."),
+        ("waveform", "Voice-follow scrolling", "The script moves as you speak. On-device, private."),
+        ("paintbrush.pointed.fill", "Themes & fonts", "Five themes and four typefaces to read your way."),
+        ("rectangle.lefthalf.filled", "Mirror mode", "Flip text for beam-splitter camera rigs.")
     ]
 
     var body: some View {
@@ -47,7 +47,7 @@ struct PaywallView: View {
             Image(systemName: "sparkles")
                 .font(.system(size: 46))
                 .foregroundStyle(Theme.accentGradient)
-            Text("Teleprompter Pro")
+            Text("CueCam Pro")
                 .font(.largeTitle.weight(.bold))
                 .foregroundStyle(Theme.textPrimary)
             Text("A one-time unlock. No subscription, ever.")

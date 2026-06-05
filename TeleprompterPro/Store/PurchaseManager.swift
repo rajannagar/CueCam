@@ -7,7 +7,7 @@ import StoreKit
 @MainActor
 final class PurchaseManager: ObservableObject {
     /// Must match the Product ID in App Store Connect (and Products.storekit for testing).
-    static let proProductID = "com.rajannagar.TeleprompterPro.pro"
+    static let proProductID = "com.rajannagar.CueCam.pro"
 
     @Published private(set) var product: Product?
     @Published private(set) var isPro = false
