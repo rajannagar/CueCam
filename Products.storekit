@@ -1,0 +1,29 @@
+{
+  "identifier" : "TeleprompterProConfig",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "6.99",
+      "familyShareable" : false,
+      "internalID" : "PRO0001",
+      "localizations" : [
+        {
+          "description" : "Unlimited scripts, mirror mode, and themes. One-time purchase.",
+          "displayName" : "Teleprompter Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.rajannagar.TeleprompterPro.pro",
+      "referenceName" : "Pro Unlock",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "TeleprompterPro"
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

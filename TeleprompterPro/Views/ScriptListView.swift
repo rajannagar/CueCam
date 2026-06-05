@@ -1,0 +1,193 @@
+import SwiftUI
+
+struct ScriptListView: View {
+    @EnvironmentObject private var store: ScriptStore
+    @EnvironmentObject private var purchases: PurchaseManager
+
+    @State private var editingScript: Script?
+    @State private var playingScript: Script?
+    @State private var showPaywall = false
+    @State private var showSettings = false
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                AppBackground()
+
+                if store.scripts.isEmpty {
+                    emptyState
+                } else {
+                    list
+                }
+            }
+            .navigationTitle("Scripts")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        newScript()
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                    }
+                }
+            }
+            .sheet(item: $editingScript) { script in
+                ScriptEditorView(script: script)
+            }
+            .fullScreenCover(item: $playingScript) { script in
+                TeleprompterView(script: script)
+            }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView()
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
+            }
+        }
+    }
+
+    private var list: some View {
+        ScrollView {
+            LazyVStack(spacing: 14) {
+                if !purchases.isPro {
+                    freeBanner
+                }
+                ForEach(store.scripts) { script in
+                    ScriptCard(
+                        script: script,
+                        onPlay: { playingScript = script },
+                        onEdit: { editingScript = script }
+                    )
+                    .contextMenu {
+                        Button { editingScript = script } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        Button(role: .destructive) {
+                            store.delete(script.id)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 8)
+            .padding(.bottom, 40)
+        }
+    }
+
+    private var freeBanner: some View {
+        Button {
+            showPaywall = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "sparkles")
+                    .font(.headline)
+                    .foregroundStyle(Theme.accent)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Free plan")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("\(store.scripts.count)/\(ScriptStore.freeLimit) scripts used · Unlock unlimited + mirror mode")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(Theme.textFaint)
+            }
+            .padding(16)
+            .cardStyle()
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "text.alignleft")
+                .font(.system(size: 54))
+                .foregroundStyle(Theme.accentGradient)
+            Text("No scripts yet")
+                .font(.title2.weight(.bold))
+                .foregroundStyle(Theme.textPrimary)
+            Text("Tap + to write or paste your first script.")
+                .font(.callout)
+                .foregroundStyle(Theme.textSecondary)
+            Button {
+                newScript()
+            } label: {
+                Text("New Script")
+                    .font(.headline)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 14)
+                    .background(Theme.accentGradient, in: Capsule())
+                    .foregroundStyle(.black)
+            }
+            .padding(.top, 4)
+        }
+        .padding()
+    }
+
+    private func newScript() {
+        if !purchases.isPro && store.scripts.count >= ScriptStore.freeLimit {
+            showPaywall = true
+            return
+        }
+        editingScript = Script()
+    }
+}
+
+private struct ScriptCard: View {
+    let script: Script
+    let onPlay: () -> Void
+    let onEdit: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(script.title.isEmpty ? "Untitled" : script.title)
+                        .font(.headline)
+                        .foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
+                    Text(metaLine)
+                        .font(.caption)
+                        .foregroundStyle(Theme.textFaint)
+                }
+                Spacer()
+                Button(action: onPlay) {
+                    Image(systemName: "play.fill")
+                        .font(.headline)
+                        .foregroundStyle(.black)
+                        .frame(width: 44, height: 44)
+                        .background(Theme.accentGradient, in: Circle())
+                }
+                .buttonStyle(.plain)
+            }
+
+            Text(script.preview)
+                .font(.subheadline)
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cardStyle()
+        .onTapGesture(perform: onEdit)
+    }
+
+    private var metaLine: String {
+        let secs = script.estimatedReadSeconds
+        let time = secs >= 60 ? "\(secs / 60)m \(secs % 60)s" : "\(secs)s"
+        return "\(script.wordCount) words · ~\(time)"
+    }
+}
