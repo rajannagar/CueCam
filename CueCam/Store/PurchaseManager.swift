@@ -52,12 +52,18 @@ final class PurchaseManager: ObservableObject {
     // MARK: - Buying
 
     func purchase() async {
-        guard let product else {
-            await loadProducts()
-            return
-        }
+        lastError = nil
         isLoading = true
         defer { isLoading = false }
+
+        // The product may not have loaded yet (e.g. no network, or the StoreKit
+        // configuration / App Store Connect product isn't available). Try once more.
+        if product == nil { await loadProducts() }
+        guard let product else {
+            lastError = "The store is unavailable right now. Please try again in a moment."
+            return
+        }
+
         do {
             let result = try await product.purchase()
             switch result {
@@ -75,6 +81,12 @@ final class PurchaseManager: ObservableObject {
             lastError = "Purchase failed. You were not charged."
         }
     }
+
+    #if DEBUG
+    /// Developer-only shortcut to flip Pro on/off while testing. Compiled out of
+    /// App Store (Release) builds entirely.
+    func debugSetPro(_ on: Bool) { isPro = on }
+    #endif
 
     func restore() async {
         isLoading = true

@@ -16,6 +16,9 @@ struct SettingsView: View {
                         statusCard
                         playbackCard
                         infoCard
+                        #if DEBUG
+                        debugCard
+                        #endif
                     }
                     .padding(18)
                 }
@@ -30,6 +33,32 @@ struct SettingsView: View {
             .sheet(isPresented: $showPaywall) { PaywallView() }
         }
     }
+
+    #if DEBUG
+    private var debugCard: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 14) {
+                Image(systemName: "hammer.fill").foregroundStyle(.orange).frame(width: 26)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Developer")
+                        .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                    Text("Test toggle. Not in the App Store build.")
+                        .font(.caption).foregroundStyle(Theme.textSecondary)
+                }
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { purchases.isPro },
+                    set: { purchases.debugSetPro($0) }
+                ))
+                .labelsHidden()
+                .tint(.orange)
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity)
+        .cardStyle()
+    }
+    #endif
 
     private var statusCard: some View {
         VStack(spacing: 14) {

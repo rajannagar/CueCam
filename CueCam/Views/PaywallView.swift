@@ -109,11 +109,19 @@ struct PaywallView: View {
             .font(.subheadline)
             .foregroundStyle(Theme.textSecondary)
 
-            Text("One-time payment. Yours forever on this Apple ID.")
-                .font(.caption2)
-                .foregroundStyle(Theme.textFaint)
+            if let error = purchases.lastError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .multilineTextAlignment(.center)
+            } else {
+                Text("One-time payment. Yours forever on this Apple ID.")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textFaint)
+            }
         }
         .padding(20)
         .background(Theme.surface.ignoresSafeArea(edges: .bottom))
+        .task { if purchases.product == nil { await purchases.loadProducts() } }
     }
 }

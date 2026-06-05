@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		1A0000000000000000000006 /* CueCam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CueCam.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ED7037732FD38A7B00356454 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -28,6 +29,7 @@
 		1A0000000000000000000002 = {
 			isa = PBXGroup;
 			children = (
+				ED7037732FD38A7B00356454 /* Products.storekit */,
 				1A0000000000000000000004 /* CueCam */,
 				1A0000000000000000000003 /* Products */,
 			);
