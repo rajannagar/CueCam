@@ -28,23 +28,22 @@ struct PrompterCanvas: View {
                 .lineSpacing(fontSize * 0.32)
                 .multilineTextAlignment(.center)
                 .shadow(color: .black.opacity(dimText < 1 ? 0.7 : 0), radius: 6, y: 1)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(width: geo.size.width - 48, alignment: .top)
                 .padding(.horizontal, 24)
-                .background(heightReader)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear.preference(key: HeightKey.self, value: proxy.size.height)
+                    }
+                )
                 .offset(y: engine.offset)
                 .scaleEffect(x: mirror ? -1 : 1, y: 1)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .opacity(dimText)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .onPreferenceChange(HeightKey.self) { engine.contentHeight = $0 }
                 .onAppear { engine.containerHeight = geo.size.height }
                 .onChange(of: geo.size) { _, s in engine.containerHeight = s.height }
         }
-    }
-
-    private var heightReader: some View {
-        GeometryReader { proxy in
-            Color.clear.preference(key: HeightKey.self, value: proxy.size.height)
-        }
-        .onPreferenceChange(HeightKey.self) { engine.contentHeight = $0 }
     }
 
     private var focalGuides: some View {

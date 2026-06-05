@@ -13,8 +13,11 @@ final class PrompterEngine: NSObject, ObservableObject {
 
     /// Layout, set by the view.
     var contentHeight: CGFloat = 0
-    var containerHeight: CGFloat = 0
+    var containerHeight: CGFloat = 0 { didSet { positionAtStartIfIdle() } }
     let focalFraction: CGFloat = 0.40
+
+    /// Whether the text has been parked at its starting position for the current layout.
+    private var positioned = false
 
     /// Config, synced from the view.
     var speed: Double = 60          // points per second (manual mode)
@@ -27,12 +30,22 @@ final class PrompterEngine: NSObject, ObservableObject {
     private var lastTimestamp: CFTimeInterval = 0
     private var countdownTask: Task<Void, Never>?
 
+    /// First line sits at the focal line.
     var startOffset: CGFloat { containerHeight * focalFraction }
-    var endOffset: CGFloat { -(contentHeight - containerHeight * (1 - focalFraction)) }
+    /// Scroll until the last line has passed the focal line, plus a little run-off.
+    var endOffset: CGFloat { startOffset - contentHeight - containerHeight * 0.18 }
 
     var progress: CGFloat {
         guard startOffset > endOffset else { return 0 }
         return min(1, max(0, (startOffset - offset) / (startOffset - endOffset)))
+    }
+
+    /// Park the text at the start once we know the container size (layout can arrive
+    /// after the view's onAppear), so the first line begins at the focal line.
+    private func positionAtStartIfIdle() {
+        guard !positioned, !isPlaying, !finished, containerHeight > 0 else { return }
+        offset = startOffset
+        positioned = true
     }
 
     func startLink() {
@@ -66,7 +79,9 @@ final class PrompterEngine: NSObject, ObservableObject {
             offset -= CGFloat(speed) * CGFloat(dt)
         }
 
-        if offset <= endOffset {
+        // Only allow finishing once the script height is actually known, otherwise a
+        // not-yet-measured script (contentHeight == 0) would "end" after a line or two.
+        if contentHeight > 1, offset <= endOffset {
             offset = endOffset
             isPlaying = false
             finished = true
@@ -119,6 +134,7 @@ final class PrompterEngine: NSObject, ObservableObject {
     func reset() {
         finished = false
         isPlaying = false
+        positioned = true
         cancelCountdown()
         withAnimation(.easeOut(duration: 0.35)) { offset = startOffset }
     }
