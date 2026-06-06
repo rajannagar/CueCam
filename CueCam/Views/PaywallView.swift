@@ -9,7 +9,8 @@ struct PaywallView: View {
         ("infinity", "Unlimited scripts", "Save as many as you want, no caps."),
         ("waveform", "Voice-follow scrolling", "The script moves as you speak. On-device, private."),
         ("highlighter", "Karaoke highlight", "The line you're reading stays bright, the rest dims."),
-        ("paintpalette.fill", "All themes & text colors", "Nine themes plus any custom text color you like."),
+        ("speaker.wave.2.fill", "Hands-free volume control", "Play, pause, and record with the volume buttons."),
+        ("paintpalette.fill", "Themes, fonts & colors", "9 themes, 7 fonts, and any custom text color."),
         ("rectangle.lefthalf.filled", "Mirror mode", "Flip text for beam-splitter camera rigs.")
     ]
 
