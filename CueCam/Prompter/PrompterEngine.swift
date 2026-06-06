@@ -13,11 +13,12 @@ final class PrompterEngine: NSObject, ObservableObject {
 
     /// Layout, set by the view.
     var contentHeight: CGFloat = 0
-    var containerHeight: CGFloat = 0 { didSet { positionAtStartIfIdle() } }
+    var containerHeight: CGFloat = 0 { didSet { pinToStartIfIdle() } }
     let focalFraction: CGFloat = 0.40
 
-    /// Whether the text has been parked at its starting position for the current layout.
-    private var positioned = false
+    /// True once the user has started playback or manually moved the text. Until then,
+    /// the first line stays pinned to the start so play always begins at the top.
+    private var hasStarted = false
 
     /// Config, synced from the view.
     var speed: Double = 60          // points per second (manual mode)
@@ -40,13 +41,16 @@ final class PrompterEngine: NSObject, ObservableObject {
         return min(1, max(0, (startOffset - offset) / (startOffset - endOffset)))
     }
 
-    /// Park the text at the start once we know the container size (layout can arrive
-    /// after the view's onAppear), so the first line begins at the focal line.
-    private func positionAtStartIfIdle() {
-        guard !positioned, !isPlaying, !finished, containerHeight > 0 else { return }
+    /// Keep the first line parked at the start while idle. Re-runs on every layout
+    /// change (the container size often arrives after the view's onAppear), so the
+    /// text is reliably at the top before the user hits play — regardless of timing.
+    private func pinToStartIfIdle() {
+        guard !hasStarted, !isPlaying, !finished, containerHeight > 0 else { return }
         offset = startOffset
-        positioned = true
     }
+
+    /// Marks that the user has taken control (dragged the text), so we stop auto-pinning.
+    func markEngaged() { hasStarted = true }
 
     func startLink() {
         guard link == nil else { return }
@@ -103,6 +107,7 @@ final class PrompterEngine: NSObject, ObservableObject {
     }
 
     func beginPlayback(countdownEnabled: Bool) {
+        hasStarted = true
         let nearStart = abs(offset - startOffset) < 4
         if countdownEnabled && nearStart && !voiceFollow {
             startCountdown()
@@ -134,7 +139,7 @@ final class PrompterEngine: NSObject, ObservableObject {
     func reset() {
         finished = false
         isPlaying = false
-        positioned = true
+        hasStarted = false
         cancelCountdown()
         withAnimation(.easeOut(duration: 0.35)) { offset = startOffset }
     }

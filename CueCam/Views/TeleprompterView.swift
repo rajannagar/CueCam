@@ -191,7 +191,7 @@ struct TeleprompterView: View {
     private var dragGesture: some Gesture {
         DragGesture(minimumDistance: 6)
             .onChanged { value in
-                if dragBase == nil { dragBase = engine.offset; engine.isPlaying = false; engine.cancelCountdown(); showControls() }
+                if dragBase == nil { dragBase = engine.offset; engine.isPlaying = false; engine.cancelCountdown(); engine.markEngaged(); showControls() }
                 engine.offset = (dragBase ?? engine.offset) + value.translation.height
             }
             .onEnded { _ in dragBase = nil; engine.finished = false }

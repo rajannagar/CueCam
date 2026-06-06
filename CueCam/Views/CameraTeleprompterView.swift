@@ -246,7 +246,7 @@ struct CameraTeleprompterView: View {
     private var dragGesture: some Gesture {
         DragGesture(minimumDistance: 6)
             .onChanged { value in
-                if dragBase == nil { dragBase = engine.offset; showControls() }
+                if dragBase == nil { dragBase = engine.offset; engine.markEngaged(); showControls() }
                 engine.offset = (dragBase ?? engine.offset) + value.translation.height
             }
             .onEnded { _ in dragBase = nil; engine.finished = false }
