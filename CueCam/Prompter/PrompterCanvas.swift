@@ -12,13 +12,15 @@ struct PrompterCanvas: View {
     let textColor: Color
     let mirror: Bool
     var bold: Bool = false
+    var karaoke: Bool = false
     var dimText: Double = 1.0          // camera mode dims text slightly for legibility over video
 
     var body: some View {
         ZStack {
             ScrollingText(scroll: engine.scroll, engine: engine, text: text,
                           fontSize: fontSize, font: font, textColor: textColor,
-                          mirror: mirror, bold: bold, dimText: dimText)
+                          mirror: mirror, bold: bold, karaoke: karaoke,
+                          focalFraction: engine.focalFraction, dimText: dimText)
             focalGuides
             if let n = engine.countdown { countdownOverlay(n) }
         }
@@ -67,36 +69,65 @@ private struct ScrollingText: View {
     let textColor: Color
     let mirror: Bool
     let bold: Bool
+    let karaoke: Bool
+    let focalFraction: CGFloat
     let dimText: Double
 
     var body: some View {
         GeometryReader { geo in
-            Text(text)
-                .font(font.font(size: fontSize, bold: bold))
-                .foregroundStyle(textColor)
-                .lineSpacing(fontSize * 0.32)
-                .multilineTextAlignment(.center)
-                .shadow(color: .black.opacity(dimText < 1 ? 0.7 : 0), radius: 6, y: 1)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(width: geo.size.width - 48, alignment: .top)
-                .padding(.horizontal, 24)
-                .background(
-                    GeometryReader { proxy in
+            ZStack {
+                // Base layer (dimmed when karaoke is on), and the layer that measures height.
+                textLayer(width: geo.size.width, measure: true)
+                    .opacity(dimText * (karaoke ? 0.30 : 1))
+
+                // Bright "spotlight" line at the reading position.
+                if karaoke {
+                    textLayer(width: geo.size.width, measure: false)
+                        .opacity(dimText)
+                        .mask(spotlight(in: geo.size))
+                }
+            }
+            .onAppear {
+                engine.firstLineLead = fontSize * 0.6
+                engine.containerHeight = geo.size.height
+            }
+            .onChange(of: geo.size) { _, s in engine.containerHeight = s.height }
+            .onChange(of: fontSize) { _, s in engine.firstLineLead = s * 0.6 }
+        }
+    }
+
+    private func textLayer(width: CGFloat, measure: Bool) -> some View {
+        Text(text)
+            .font(font.font(size: fontSize, bold: bold))
+            .foregroundStyle(textColor)
+            .lineSpacing(fontSize * 0.32)
+            .multilineTextAlignment(.center)
+            .shadow(color: .black.opacity(dimText < 1 ? 0.7 : 0), radius: 6, y: 1)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(width: width - 48, alignment: .top)
+            .padding(.horizontal, 24)
+            .background(
+                measure
+                    ? GeometryReader { proxy in
                         Color.clear.preference(key: HeightKey.self, value: proxy.size.height)
                     }
-                )
-                .offset(y: scroll.offset)
-                .scaleEffect(x: mirror ? -1 : 1, y: 1)
-                .opacity(dimText)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .onPreferenceChange(HeightKey.self) { engine.contentHeight = $0 }
-                .onAppear {
-                    engine.firstLineLead = fontSize * 0.6
-                    engine.containerHeight = geo.size.height
-                }
-                .onChange(of: geo.size) { _, s in engine.containerHeight = s.height }
-                .onChange(of: fontSize) { _, s in engine.firstLineLead = s * 0.6 }
-        }
+                    : nil
+            )
+            .offset(y: scroll.offset)
+            .scaleEffect(x: mirror ? -1 : 1, y: 1)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .onPreferenceChange(HeightKey.self) { if measure { engine.contentHeight = $0 } }
+    }
+
+    /// A soft horizontal band fixed at the reading line, used to reveal the bright text.
+    private func spotlight(in size: CGSize) -> some View {
+        let y = size.height * focalFraction
+        return LinearGradient(
+            colors: [.clear, .black, .black, .clear],
+            startPoint: .top, endPoint: .bottom
+        )
+        .frame(height: fontSize * 2.6)
+        .position(x: size.width / 2, y: y)
     }
 }
 

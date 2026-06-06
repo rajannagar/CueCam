@@ -22,6 +22,8 @@ struct CameraTeleprompterView: View {
     @AppStorage("tp.textColorHex") private var textColorHex = ""
     @AppStorage("tp.focal") private var focal: Double = 0.40
     @AppStorage("tp.voiceFollow") private var voiceFollow = false
+    @AppStorage("tp.karaoke") private var karaoke = false
+    @AppStorage("tp.aspect") private var aspectRaw = AspectGuide.off.rawValue
 
     @State private var controlsVisible = true
     @State private var hideWork: DispatchWorkItem?
@@ -46,7 +48,10 @@ struct CameraTeleprompterView: View {
             // Text always white-ish over video for legibility, regardless of theme bg.
             PrompterCanvas(engine: engine, text: script.body, fontSize: fontSize,
                            font: font, textColor: cameraTextColor,
-                           mirror: mirror && purchases.isPro, bold: bold, dimText: 0.96)
+                           mirror: mirror && purchases.isPro, bold: bold,
+                           karaoke: karaoke && purchases.isPro, dimText: 0.96)
+
+            AspectGuideOverlay(guide: AspectGuide(rawValue: aspectRaw) ?? .off)
                 .contentShape(Rectangle())
                 .gesture(dragGesture)
                 .onTapGesture { handleTap() }
@@ -102,6 +107,7 @@ struct CameraTeleprompterView: View {
                 Spacer()
                 if camera.isRecording { recordingPill }
                 Spacer()
+                aspectButton
                 if camera.lastRecordingURL != nil && !camera.isRecording {
                     circleButton("square.and.arrow.up") { showShare = true }
                 }
@@ -113,6 +119,21 @@ struct CameraTeleprompterView: View {
         }
         .opacity(controlsVisible || camera.isRecording ? 1 : 0)
         .animation(.easeInOut(duration: 0.25), value: controlsVisible)
+    }
+
+    private var aspectButton: some View {
+        let guide = AspectGuide(rawValue: aspectRaw) ?? .off
+        return Button {
+            aspectRaw = guide.next().rawValue
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        } label: {
+            Text(guide.label)
+                .font(.caption.weight(.bold).monospacedDigit())
+                .foregroundStyle(.white)
+                .frame(height: 40).padding(.horizontal, 12)
+                .background(.ultraThinMaterial, in: Capsule())
+        }
+        .buttonStyle(PressStyle())
     }
 
     private var recordingPill: some View {

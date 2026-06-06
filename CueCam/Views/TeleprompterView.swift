@@ -20,6 +20,10 @@ struct TeleprompterView: View {
     @AppStorage("tp.textColorHex") private var textColorHex = ""
     @AppStorage("tp.focal") private var focal: Double = 0.40
     @AppStorage("tp.voiceFollow") private var voiceFollow = false
+    @AppStorage("tp.karaoke") private var karaoke = false
+    @AppStorage("tp.volumeControl") private var volumeControl = false
+
+    @StateObject private var volume = VolumeButtonObserver()
 
     @State private var controlsVisible = true
     @State private var hideWork: DispatchWorkItem?
@@ -40,7 +44,8 @@ struct TeleprompterView: View {
 
             PrompterCanvas(engine: engine, text: script.body, fontSize: fontSize,
                            font: font, textColor: textColor,
-                           mirror: mirror && purchases.isPro, bold: bold)
+                           mirror: mirror && purchases.isPro, bold: bold,
+                           karaoke: karaoke && purchases.isPro)
                 .contentShape(Rectangle())
                 .gesture(dragGesture)
                 .onTapGesture { handleTap() }
@@ -59,9 +64,16 @@ struct TeleprompterView: View {
             engine.focalFraction = CGFloat(focal)
             engine.voiceFollow = usingVoice
             engine.reset()
+            if volumeControl {
+                volume.onPress = { togglePlay() }
+                volume.start()
+            }
         }
         .onChange(of: focal) { _, v in engine.focalFraction = CGFloat(v); engine.reset() }
-        .onDisappear { engine.stopLink(); voice.stop() }
+        .onChange(of: volumeControl) { _, on in
+            if on { volume.onPress = { togglePlay() }; volume.start() } else { volume.stop() }
+        }
+        .onDisappear { engine.stopLink(); voice.stop(); volume.stop() }
         .onChange(of: speed) { _, v in engine.speed = v }
         .onChange(of: voiceFollow) { _, _ in engine.voiceFollow = usingVoice }
         .onChange(of: voice.progress) { _, p in engine.voiceProgress = p }

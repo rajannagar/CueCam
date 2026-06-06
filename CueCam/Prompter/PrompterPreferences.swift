@@ -15,6 +15,8 @@ struct PrompterPreferences: View {
     @AppStorage("tp.countdown") private var countdownEnabled = true
     @AppStorage("tp.mirror") private var mirror = false
     @AppStorage("tp.voiceFollow") private var voiceFollow = false
+    @AppStorage("tp.karaoke") private var karaoke = false
+    @AppStorage("tp.volumeControl") private var volumeControl = false
 
     @State private var showPaywall = false
 
@@ -188,7 +190,11 @@ struct PrompterPreferences: View {
         VStack(spacing: 4) {
             toggleRow("timer", "3-2-1 countdown", isOn: $countdownEnabled)
             Divider().overlay(Color.white.opacity(0.06))
+            toggleRow("speaker.wave.2.fill", "Volume-button control", isOn: $volumeControl)
+            Divider().overlay(Color.white.opacity(0.06))
             proToggleRow("rectangle.lefthalf.filled", "Mirror mode", isOn: $mirror)
+            Divider().overlay(Color.white.opacity(0.06))
+            proToggleRow("highlighter", "Karaoke highlight", isOn: $karaoke)
             Divider().overlay(Color.white.opacity(0.06))
             proToggleRow("waveform", "Voice-follow scrolling", isOn: $voiceFollow)
         }
