@@ -24,6 +24,9 @@ struct CameraTeleprompterView: View {
     @AppStorage("tp.voiceFollow") private var voiceFollow = false
     @AppStorage("tp.karaoke") private var karaoke = false
     @AppStorage("tp.aspect") private var aspectRaw = AspectGuide.off.rawValue
+    @AppStorage("tp.volumeControl") private var volumeControl = false
+
+    @StateObject private var volume = VolumeButtonObserver()
 
     @State private var controlsVisible = true
     @State private var hideWork: DispatchWorkItem?
@@ -71,9 +74,17 @@ struct CameraTeleprompterView: View {
             engine.voiceFollow = usingVoice
             engine.reset()
             await camera.configure()
+            if volumeControl {
+                volume.onPress = { tapRecord() }
+                volume.start(configuresSession: false)
+            }
         }
         .onChange(of: focal) { _, v in engine.focalFraction = CGFloat(v); engine.reset() }
-        .onDisappear { engine.stopLink(); camera.stop(); voice.stop() }
+        .onChange(of: volumeControl) { _, on in
+            if on { volume.onPress = { tapRecord() }; volume.start(configuresSession: false) }
+            else { volume.stop() }
+        }
+        .onDisappear { engine.stopLink(); camera.stop(); voice.stop(); volume.stop() }
         .onChange(of: speed) { _, v in engine.speed = v }
         .onChange(of: voiceFollow) { _, _ in engine.voiceFollow = usingVoice }
         .onChange(of: voice.progress) { _, p in engine.voiceProgress = p }
@@ -95,7 +106,7 @@ struct CameraTeleprompterView: View {
 
     private var cameraTextColor: Color {
         if purchases.isPro, !textColorHex.isEmpty, let c = Color(hex: textColorHex) { return c }
-        return theme == .classic ? .white : theme.textColor
+        return theme.cameraTextColor
     }
 
     // MARK: - Overlays

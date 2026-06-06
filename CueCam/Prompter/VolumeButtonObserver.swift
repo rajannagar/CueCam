@@ -16,14 +16,20 @@ final class VolumeButtonObserver: NSObject, ObservableObject {
     private var hiddenVolumeView: MPVolumeView?
     private var active = false
     private var ignoreNext = false
+    private var ownsSession = false
 
-    func start() {
+    /// - Parameter configuresSession: when true (screen mode) we own a quiet playback
+    ///   session. In camera mode pass false so the capture session keeps owning audio
+    ///   and recording isn't disrupted — we just observe the volume passively.
+    func start(configuresSession: Bool = true) {
         guard !active else { return }
         active = true
 
-        // Quietly own an audio session so we receive volume changes.
-        try? session.setCategory(.playback, options: [.mixWithOthers])
-        try? session.setActive(true)
+        ownsSession = configuresSession
+        if configuresSession {
+            try? session.setCategory(.playback, options: [.mixWithOthers])
+            try? session.setActive(true)
+        }
         baseline = session.outputVolume
 
         // An off-screen MPVolumeView suppresses the on-screen volume HUD.
@@ -47,7 +53,9 @@ final class VolumeButtonObserver: NSObject, ObservableObject {
         observation = nil
         hiddenVolumeView?.removeFromSuperview()
         hiddenVolumeView = nil
-        try? session.setActive(false, options: .notifyOthersOnDeactivation)
+        if ownsSession {
+            try? session.setActive(false, options: .notifyOthersOnDeactivation)
+        }
     }
 
     private func handleChange() {

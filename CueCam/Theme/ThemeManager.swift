@@ -8,7 +8,14 @@ final class ThemeManager: ObservableObject {
     static let key = "tp.theme"
 
     @Published var selected: PrompterTheme {
-        didSet { UserDefaults.standard.set(selected.rawValue, forKey: Self.key) }
+        didSet {
+            UserDefaults.standard.set(selected.rawValue, forKey: Self.key)
+            // Reset any custom text color so the new theme's high-contrast default
+            // takes over — keeps text readable on both screen and camera.
+            if oldValue != selected {
+                UserDefaults.standard.removeObject(forKey: "tp.textColorHex")
+            }
+        }
     }
 
     init() {

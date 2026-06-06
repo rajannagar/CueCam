@@ -54,6 +54,13 @@ enum PrompterTheme: String, CaseIterable, Identifiable {
 
     var swatch: Color { self == .paper ? Color(red: 0.96, green: 0.95, blue: 0.91) : textColor }
 
+    /// Text color for camera mode. Over live video the background is unpredictable, so
+    /// every theme uses a light, high-contrast color here (e.g. Paper's dark ink would
+    /// be unreadable over video, so it becomes white).
+    var cameraTextColor: Color {
+        self == .paper ? .white : textColor
+    }
+
     // MARK: - App-wide chrome palette
     // The whole app adopts the chosen theme so it feels blended. These stay dark
     // (so white UI text stays legible) but carry the theme's hue.
