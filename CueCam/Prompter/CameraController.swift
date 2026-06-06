@@ -16,6 +16,8 @@ final class CameraController: NSObject, ObservableObject {
     @Published var elapsed: TimeInterval = 0
     @Published var lastSavedOK: Bool? = nil
     @Published var message: String?
+    /// The most recent recording, kept around so it can be shared.
+    @Published var lastRecordingURL: URL?
 
     let session = AVCaptureSession()
     private let movieOutput = AVCaptureMovieFileOutput()
@@ -179,6 +181,7 @@ extension CameraController: AVCaptureFileOutputRecordingDelegate {
         }
         lastSavedOK = ok
         message = ok ? "Saved to your photos." : "Couldn't save to Photos. Check permissions in Settings."
-        try? FileManager.default.removeItem(at: url)
+        // Keep the file so the user can share it (TikTok, Instagram, Messages…).
+        lastRecordingURL = url
     }
 }

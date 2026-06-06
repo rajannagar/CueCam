@@ -10,6 +10,8 @@ struct ScriptListView: View {
     @State private var filmingScript: Script?
     @State private var showPaywall = false
     @State private var showSettings = false
+    @State private var showTemplates = false
+    @State private var shareItems: [Any]?
 
     var body: some View {
         NavigationStack {
@@ -60,6 +62,12 @@ struct ScriptListView: View {
             .sheet(isPresented: $showSettings) {
                 SettingsView()
             }
+            .sheet(isPresented: $showTemplates) {
+                TemplatePickerView { editingScript = $0 }
+            }
+            .sheet(isPresented: Binding(get: { shareItems != nil }, set: { if !$0 { shareItems = nil } })) {
+                if let items = shareItems { ShareSheet(items: items) }
+            }
         }
     }
 
@@ -92,6 +100,9 @@ struct ScriptListView: View {
                         }
                         Button { editingScript = script } label: {
                             Label("Edit", systemImage: "pencil")
+                        }
+                        Button { shareAsPDF(script) } label: {
+                            Label("Share as PDF", systemImage: "square.and.arrow.up")
                         }
                         Button(role: .destructive) {
                             store.delete(script.id)
@@ -165,7 +176,11 @@ struct ScriptListView: View {
             showPaywall = true
             return
         }
-        editingScript = Script()
+        showTemplates = true
+    }
+
+    private func shareAsPDF(_ script: Script) {
+        if let url = ScriptPDF.make(from: script) { shareItems = [url] }
     }
 }
 

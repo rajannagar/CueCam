@@ -46,7 +46,8 @@ struct TeleprompterView: View {
                 .onTapGesture { handleTap() }
 
             vignette
-            progressBar
+            PrompterProgressBar(scroll: engine.scroll, engine: engine,
+                                trackColor: theme.textColor.opacity(0.12))
             topBar
             controls
         }
@@ -85,21 +86,6 @@ struct TeleprompterView: View {
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
-    }
-
-    private var progressBar: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule().fill(theme.textColor.opacity(0.12))
-                Capsule().fill(tm.accentGradient)
-                    .frame(width: max(0, geo.size.width * engine.progress))
-            }
-            .frame(height: 3)
-            .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.top, 6).padding(.horizontal, 20)
-        }
-        .allowsHitTesting(false)
-        .opacity(engine.contentHeight > engine.containerHeight ? 1 : 0)
     }
 
     private var topBar: some View {

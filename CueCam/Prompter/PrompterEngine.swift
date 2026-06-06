@@ -4,9 +4,23 @@ import QuartzCore
 /// Single source of truth for scroll position and playback, shared by both the
 /// screen prompter and the camera prompter. Driven by a CADisplayLink for buttery
 /// 120Hz-capable motion.
+/// Holds only the scroll offset, which changes every frame. Isolating it in its own
+/// observable object means only the moving text re-renders at 120Hz — not the whole
+/// prompter UI (controls, materials, bars). This is what keeps scrolling buttery.
+@MainActor
+final class ScrollModel: ObservableObject {
+    @Published var offset: CGFloat = 0
+}
+
 @MainActor
 final class PrompterEngine: NSObject, ObservableObject {
-    @Published var offset: CGFloat = 0
+    /// Per-frame scroll position lives here so high-frequency updates stay isolated.
+    let scroll = ScrollModel()
+    var offset: CGFloat {
+        get { scroll.offset }
+        set { scroll.offset = newValue }
+    }
+
     @Published var isPlaying = false
     @Published var finished = false
     @Published var countdown: Int? = nil

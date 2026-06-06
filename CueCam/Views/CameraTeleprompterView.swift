@@ -29,6 +29,7 @@ struct CameraTeleprompterView: View {
     @State private var dragBase: CGFloat?
     @State private var recordArmed = false
     @State private var showToast = false
+    @State private var showShare = false
 
     private var theme: PrompterTheme { tm.selected }
     private var font: PrompterFont { PrompterFont(rawValue: fontRaw) ?? .rounded }
@@ -82,6 +83,9 @@ struct CameraTeleprompterView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { withAnimation { showToast = false } }
         }
         .sheet(isPresented: $showSettings) { PrompterSettingsSheet() }
+        .sheet(isPresented: $showShare) {
+            if let url = camera.lastRecordingURL { ShareSheet(items: [url]) }
+        }
     }
 
     private var cameraTextColor: Color {
@@ -98,6 +102,9 @@ struct CameraTeleprompterView: View {
                 Spacer()
                 if camera.isRecording { recordingPill }
                 Spacer()
+                if camera.lastRecordingURL != nil && !camera.isRecording {
+                    circleButton("square.and.arrow.up") { showShare = true }
+                }
                 circleButton("arrow.triangle.2.circlepath") { camera.switchCamera() }
                 circleButton("slider.horizontal.3") { engine.isPlaying = false; showSettings = true }
             }
