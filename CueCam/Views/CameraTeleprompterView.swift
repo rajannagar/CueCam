@@ -3,6 +3,7 @@ import SwiftUI
 /// Camera mode: the script scrolls over the live camera while you record yourself.
 /// The text is an on-screen overlay only - it is never burned into the video.
 struct CameraTeleprompterView: View {
+    @Environment(\.palette) private var palette
     let script: Script
 
     @EnvironmentObject private var purchases: PurchaseManager
@@ -17,7 +18,7 @@ struct CameraTeleprompterView: View {
     @AppStorage("tp.fontSize") private var fontSize: Double = 44
     @AppStorage("tp.mirror") private var mirror = false
     @AppStorage("tp.countdown") private var countdownEnabled = true
-    @AppStorage("tp.font") private var fontRaw = PrompterFont.rounded.rawValue
+    @AppStorage("tp.font") private var fontRaw = PrompterFont.serif.rawValue
     @AppStorage("tp.bold") private var bold = false
     @AppStorage("tp.textColorHex") private var textColorHex = ""
     @AppStorage("tp.focal") private var focal: Double = 0.40
@@ -38,7 +39,7 @@ struct CameraTeleprompterView: View {
 
     private var theme: PrompterTheme { tm.selected }
     private var font: PrompterFont {
-        let f = PrompterFont(rawValue: fontRaw) ?? .rounded
+        let f = PrompterFont(rawValue: fontRaw) ?? .serif
         return (f.isFree || purchases.isPro) ? f : .rounded
     }
     private var usingVoice: Bool { voiceFollow && purchases.isPro }
@@ -227,7 +228,7 @@ struct CameraTeleprompterView: View {
                 Text("Camera access needed")
                     .font(.title3.weight(.bold)).foregroundStyle(.white)
                 Text(camera.message ?? "Enable Camera and Microphone in Settings.")
-                    .font(.callout).foregroundStyle(Theme.textSecondary).multilineTextAlignment(.center)
+                    .font(.callout).foregroundStyle(palette.textSecondary).multilineTextAlignment(.center)
                 Button {
                     if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                 } label: {
@@ -235,7 +236,7 @@ struct CameraTeleprompterView: View {
                         .padding(.horizontal, 24).padding(.vertical, 12)
                         .background(tm.accentGradient, in: Capsule()).foregroundStyle(.black)
                 }
-                Button("Close") { dismiss() }.foregroundStyle(Theme.textSecondary).padding(.top, 4)
+                Button("Close") { dismiss() }.foregroundStyle(palette.textSecondary).padding(.top, 4)
             }
             .padding(32)
         }

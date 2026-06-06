@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ScriptEditorView: View {
+    @Environment(\.palette) private var palette
     @EnvironmentObject private var store: ScriptStore
     @EnvironmentObject private var tm: ThemeManager
     @Environment(\.dismiss) private var dismiss
@@ -55,9 +56,9 @@ struct ScriptEditorView: View {
     }
 
     private var titleField: some View {
-        TextField("", text: $draft.title, prompt: Text("Title").foregroundColor(Theme.textFaint))
+        TextField("", text: $draft.title, prompt: Text("Title").foregroundColor(palette.textFaint))
             .font(.title3.weight(.semibold))
-            .foregroundStyle(Theme.textPrimary)
+            .foregroundStyle(palette.textPrimary)
             .padding(16)
             .cardStyle()
     }
@@ -73,7 +74,7 @@ struct ScriptEditorView: View {
                 Spacer()
                 Text("Script")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(Theme.textFaint)
+                    .foregroundStyle(palette.textFaint)
             }
             .padding(.horizontal, 16)
             .padding(.top, 14)
@@ -85,13 +86,13 @@ struct ScriptEditorView: View {
                 if draft.body.isEmpty {
                     Text("Write or paste your script here.\n\nTip: a blank line makes a clean break between paragraphs as it scrolls.")
                         .font(.system(size: 17))
-                        .foregroundStyle(Theme.textFaint)
+                        .foregroundStyle(palette.textFaint)
                         .padding(.horizontal, 18)
                         .padding(.top, 18)
                 }
                 TextEditor(text: $draft.body)
                     .font(.system(size: 17))
-                    .foregroundStyle(Theme.textPrimary)
+                    .foregroundStyle(palette.textPrimary)
                     .lineSpacing(4)
                     .scrollContentBackground(.hidden)
                     .padding(.horizontal, 12)
@@ -115,8 +116,8 @@ struct ScriptEditorView: View {
 
     private func stat(_ value: String, _ label: String) -> some View {
         HStack(spacing: 5) {
-            Text(value).font(.subheadline.weight(.semibold).monospacedDigit()).foregroundStyle(Theme.textPrimary)
-            Text(label).font(.caption).foregroundStyle(Theme.textFaint)
+            Text(value).font(.subheadline.weight(.semibold).monospacedDigit()).foregroundStyle(palette.textPrimary)
+            Text(label).font(.caption).foregroundStyle(palette.textFaint)
         }
     }
 

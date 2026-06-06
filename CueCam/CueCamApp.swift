@@ -12,7 +12,8 @@ struct CueCamApp: App {
                 .environmentObject(store)
                 .environmentObject(purchases)
                 .environmentObject(theme)
-                .preferredColorScheme(.dark)
+                .environment(\.palette, theme.palette)
+                .preferredColorScheme(theme.colorScheme)
                 .tint(theme.accent)
                 .task {
                     await purchases.start()

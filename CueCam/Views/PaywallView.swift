@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PaywallView: View {
+    @Environment(\.palette) private var palette
     @EnvironmentObject private var purchases: PurchaseManager
     @EnvironmentObject private var tm: ThemeManager
     @Environment(\.dismiss) private var dismiss
@@ -37,7 +38,7 @@ struct PaywallView: View {
             Button { dismiss() } label: {
                 Image(systemName: "xmark")
                     .font(.headline)
-                    .foregroundStyle(Theme.textSecondary)
+                    .foregroundStyle(palette.textSecondary)
                     .padding(12)
             }
         }
@@ -52,10 +53,10 @@ struct PaywallView: View {
                 .foregroundStyle(tm.accentGradient)
             Text("CueCam Pro")
                 .font(.largeTitle.weight(.bold))
-                .foregroundStyle(Theme.textPrimary)
+                .foregroundStyle(palette.textPrimary)
             Text("A one-time unlock. No subscription, ever.")
                 .font(.callout)
-                .foregroundStyle(Theme.textSecondary)
+                .foregroundStyle(palette.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .padding(.top, 8)
@@ -72,10 +73,10 @@ struct PaywallView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(feature.1)
                             .font(.headline)
-                            .foregroundStyle(Theme.textPrimary)
+                            .foregroundStyle(palette.textPrimary)
                         Text(feature.2)
                             .font(.subheadline)
-                            .foregroundStyle(Theme.textSecondary)
+                            .foregroundStyle(palette.textSecondary)
                     }
                     Spacer()
                 }
@@ -110,7 +111,7 @@ struct PaywallView: View {
                 Task { await purchases.restore(); if purchases.isPro { dismiss() } }
             }
             .font(.subheadline)
-            .foregroundStyle(Theme.textSecondary)
+            .foregroundStyle(palette.textSecondary)
 
             if let error = purchases.lastError {
                 Text(error)
@@ -120,11 +121,11 @@ struct PaywallView: View {
             } else {
                 Text("One-time payment. Yours forever on this Apple ID.")
                     .font(.caption2)
-                    .foregroundStyle(Theme.textFaint)
+                    .foregroundStyle(palette.textFaint)
             }
         }
         .padding(20)
-        .background(Theme.surface.ignoresSafeArea(edges: .bottom))
+        .background(palette.surface.ignoresSafeArea(edges: .bottom))
         .task { if purchases.product == nil { await purchases.loadProducts() } }
     }
 }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ScriptListView: View {
+    @Environment(\.palette) private var palette
     @EnvironmentObject private var store: ScriptStore
     @EnvironmentObject private var purchases: PurchaseManager
     @EnvironmentObject private var tm: ThemeManager
@@ -36,7 +37,7 @@ struct ScriptListView: View {
                 ToolbarItem(placement: .principal) {
                     Text("CueCam")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.textPrimary)
+                        .foregroundStyle(palette.textPrimary)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -77,7 +78,7 @@ struct ScriptListView: View {
                 HStack {
                     Text("Scripts")
                         .font(.largeTitle.weight(.bold))
-                        .foregroundStyle(Theme.textPrimary)
+                        .foregroundStyle(palette.textPrimary)
                     Spacer()
                 }
                 .padding(.top, 4)
@@ -129,15 +130,15 @@ struct ScriptListView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Free plan")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.textPrimary)
+                        .foregroundStyle(palette.textPrimary)
                     Text("\(store.scripts.count)/\(ScriptStore.freeLimit) scripts used · Unlock unlimited + mirror mode")
                         .font(.caption)
-                        .foregroundStyle(Theme.textSecondary)
+                        .foregroundStyle(palette.textSecondary)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(Theme.textFaint)
+                    .foregroundStyle(palette.textFaint)
             }
             .padding(16)
             .cardStyle()
@@ -152,10 +153,10 @@ struct ScriptListView: View {
                 .foregroundStyle(tm.accentGradient)
             Text("No scripts yet")
                 .font(.title2.weight(.bold))
-                .foregroundStyle(Theme.textPrimary)
+                .foregroundStyle(palette.textPrimary)
             Text("Tap + to write or paste your first script.")
                 .font(.callout)
-                .foregroundStyle(Theme.textSecondary)
+                .foregroundStyle(palette.textSecondary)
             Button {
                 newScript()
             } label: {
@@ -185,6 +186,7 @@ struct ScriptListView: View {
 }
 
 private struct ScriptCard: View {
+    @Environment(\.palette) private var palette
     @EnvironmentObject private var tm: ThemeManager
     let script: Script
     let onFilm: () -> Void
@@ -197,18 +199,18 @@ private struct ScriptCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(script.title.isEmpty ? "Untitled" : script.title)
                         .font(.headline)
-                        .foregroundStyle(Theme.textPrimary)
+                        .foregroundStyle(palette.textPrimary)
                         .lineLimit(1)
                     Text(metaLine)
                         .font(.caption)
-                        .foregroundStyle(Theme.textFaint)
+                        .foregroundStyle(palette.textFaint)
                 }
                 Spacer()
                 HStack(spacing: 10) {
                     Button(action: onPlay) {
                         Image(systemName: "text.alignleft")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(Theme.textPrimary)
+                            .foregroundStyle(palette.textPrimary)
                             .frame(width: 44, height: 44)
                             .background(.white.opacity(0.08), in: Circle())
                     }
@@ -226,7 +228,7 @@ private struct ScriptCard: View {
 
             Text(script.preview)
                 .font(.subheadline)
-                .foregroundStyle(Theme.textSecondary)
+                .foregroundStyle(palette.textSecondary)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
         }

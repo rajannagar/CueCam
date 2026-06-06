@@ -56,59 +56,35 @@ extension Color {
     }
 }
 
-/// A subtle ambient backdrop - a soft accent glow over deep charcoal.
-/// Flat black backgrounds read as "cheap"; this gives quiet depth.
+/// A calm, flat page background in the current reader theme. No glow, no gradient:
+/// it should feel like paper, not a glossy app.
 struct AppBackground: View {
-    @EnvironmentObject private var tm: ThemeManager
+    @Environment(\.palette) private var palette
 
     var body: some View {
-        ZStack {
-            tm.selected.appBase
-            RadialGradient(
-                colors: [tm.selected.appGlow.opacity(0.18), .clear],
-                center: .topLeading,
-                startRadius: 0,
-                endRadius: 520
-            )
-            RadialGradient(
-                colors: [tm.selected.appGlow.opacity(0.12), .clear],
-                center: .bottomTrailing,
-                startRadius: 0,
-                endRadius: 480
-            )
-        }
-        .ignoresSafeArea()
-        .animation(.easeInOut(duration: 0.4), value: tm.selected)
+        palette.background
+            .ignoresSafeArea()
+            .animation(.easeInOut(duration: 0.35), value: palette.background)
     }
 }
 
 extension View {
-    /// A reusable card container used throughout the app. A frosted translucent fill
-    /// (which picks up the themed background behind it) with a soft top highlight, a
-    /// hairline edge, and a gentle drop shadow - so cards read as raised glass, not
-    /// flat gray boxes.
+    /// A quiet, flat card: a solid surface fill with a hairline border and only a
+    /// whisper of shadow. Adapts to the reader theme (light or dark).
     func cardStyle() -> some View {
-        let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
-        return self
-            .background(.ultraThinMaterial, in: shape)
-            .background(
-                shape.fill(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.10), Color.white.opacity(0.02)],
-                        startPoint: .top, endPoint: .bottom
-                    )
-                )
-            )
-            .overlay(
-                shape.stroke(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.18), Color.white.opacity(0.04)],
-                        startPoint: .top, endPoint: .bottom
-                    ),
-                    lineWidth: 1
-                )
-            )
+        modifier(CardStyle())
+    }
+}
+
+private struct CardStyle: ViewModifier {
+    @Environment(\.palette) private var palette
+
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 18, style: .continuous)
+        return content
+            .background(shape.fill(palette.card))
+            .overlay(shape.stroke(palette.cardStroke, lineWidth: 1))
             .clipShape(shape)
-            .shadow(color: .black.opacity(0.28), radius: 14, x: 0, y: 8)
+            .shadow(color: .black.opacity(palette.isLight ? 0.05 : 0.18), radius: 8, x: 0, y: 3)
     }
 }

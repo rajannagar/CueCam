@@ -5,10 +5,11 @@ import SwiftUI
 /// they start) and in the in-prompter quick-settings sheet. Pro-only options route
 /// to the paywall.
 struct PrompterPreferences: View {
+    @Environment(\.palette) private var palette
     @EnvironmentObject private var purchases: PurchaseManager
     @EnvironmentObject private var tm: ThemeManager
 
-    @AppStorage("tp.font") private var fontRaw = PrompterFont.rounded.rawValue
+    @AppStorage("tp.font") private var fontRaw = PrompterFont.serif.rawValue
     @AppStorage("tp.bold") private var bold = false
     @AppStorage("tp.textColorHex") private var textColorHex = ""
     @AppStorage("tp.focal") private var focal: Double = 0.40
@@ -46,7 +47,7 @@ struct PrompterPreferences: View {
                     ColorPicker("", selection: customColorBinding, supportsOpacity: false)
                         .labelsHidden()
                     Text(textColorHex.isEmpty ? "Theme default" : "Custom")
-                        .font(.subheadline).foregroundStyle(Theme.textSecondary)
+                        .font(.subheadline).foregroundStyle(palette.textSecondary)
                     Spacer()
                     if !textColorHex.isEmpty {
                         Button("Reset") { textColorHex = "" }
@@ -56,7 +57,7 @@ struct PrompterPreferences: View {
                 } else {
                     Image(systemName: "paintpalette.fill").foregroundStyle(tm.accent).frame(width: 26)
                     Text("Choose any text color")
-                        .font(.subheadline).foregroundStyle(Theme.textPrimary)
+                        .font(.subheadline).foregroundStyle(palette.textPrimary)
                     Spacer()
                     proPill
                 }
@@ -75,7 +76,7 @@ struct PrompterPreferences: View {
                     .foregroundStyle(tm.accent).frame(width: 26)
                 Slider(value: $focal, in: 0.2...0.6).tint(tm.accent)
                 Text("\(Int(focal * 100))%")
-                    .font(.caption.monospacedDigit()).foregroundStyle(Theme.textSecondary)
+                    .font(.caption.monospacedDigit()).foregroundStyle(palette.textSecondary)
                     .frame(width: 40, alignment: .trailing)
             }
         }
@@ -128,7 +129,7 @@ struct PrompterPreferences: View {
                             }
                             .frame(height: 46)
                             .overlay(Circle().stroke(tm.accent, lineWidth: tm.selected == theme ? 2.5 : 0))
-                            Text(theme.title).font(.caption2).foregroundStyle(Theme.textSecondary)
+                            Text(theme.title).font(.caption2).foregroundStyle(palette.textSecondary)
                         }
                     }
                     .buttonStyle(.plain)
@@ -148,7 +149,7 @@ struct PrompterPreferences: View {
                 Button { bold.toggle(); UIImpactFeedbackGenerator(style: .soft).impactOccurred() } label: {
                     Text("Bold")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(bold ? .black : Theme.textSecondary)
+                        .foregroundStyle(bold ? .black : palette.textSecondary)
                         .padding(.horizontal, 12).padding(.vertical, 6)
                         .background(
                             Capsule().fill(bold ? AnyShapeStyle(tm.accentGradient) : AnyShapeStyle(Color.white.opacity(0.08)))
@@ -166,10 +167,10 @@ struct PrompterPreferences: View {
                         VStack(spacing: 4) {
                             Text("Aa")
                                 .font(f.font(size: 18, bold: false))
-                                .foregroundStyle(fontRaw == f.rawValue ? .black : Theme.textPrimary)
+                                .foregroundStyle(fontRaw == f.rawValue ? .black : palette.textPrimary)
                             Text(f.title)
                                 .font(.system(size: 9, weight: .medium))
-                                .foregroundStyle(fontRaw == f.rawValue ? .black.opacity(0.7) : Theme.textFaint)
+                                .foregroundStyle(fontRaw == f.rawValue ? .black.opacity(0.7) : palette.textFaint)
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
@@ -217,7 +218,7 @@ struct PrompterPreferences: View {
     private func toggleRow(_ icon: String, _ title: String, isOn: Binding<Bool>) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon).foregroundStyle(tm.accent).frame(width: 26)
-            Text(title).font(.subheadline.weight(.medium)).foregroundStyle(Theme.textPrimary)
+            Text(title).font(.subheadline.weight(.medium)).foregroundStyle(palette.textPrimary)
             Spacer()
             Toggle("", isOn: isOn).labelsHidden().tint(tm.accent)
         }
@@ -227,7 +228,7 @@ struct PrompterPreferences: View {
     private func proToggleRow(_ icon: String, _ title: String, isOn: Binding<Bool>) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon).foregroundStyle(tm.accent).frame(width: 26)
-            Text(title).font(.subheadline.weight(.medium)).foregroundStyle(Theme.textPrimary)
+            Text(title).font(.subheadline.weight(.medium)).foregroundStyle(palette.textPrimary)
             Spacer()
             if purchases.isPro {
                 Toggle("", isOn: isOn).labelsHidden().tint(tm.accent)
@@ -250,7 +251,7 @@ struct PrompterPreferences: View {
     private func sectionTitle(_ t: String) -> some View {
         Text(t.uppercased())
             .font(.caption.weight(.semibold))
-            .foregroundStyle(Theme.textFaint)
+            .foregroundStyle(palette.textFaint)
             .tracking(0.5)
     }
 }

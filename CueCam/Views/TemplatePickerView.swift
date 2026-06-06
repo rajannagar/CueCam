@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Shown when creating a new script: start blank or from a ready-made template.
 struct TemplatePickerView: View {
+    @Environment(\.palette) private var palette
     @EnvironmentObject private var tm: ThemeManager
     @Environment(\.dismiss) private var dismiss
 
@@ -38,11 +39,11 @@ struct TemplatePickerView: View {
             HStack(spacing: 14) {
                 iconBadge("doc.badge.plus")
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Blank script").font(.headline).foregroundStyle(Theme.textPrimary)
-                    Text("Start from scratch").font(.caption).foregroundStyle(Theme.textSecondary)
+                    Text("Blank script").font(.headline).foregroundStyle(palette.textPrimary)
+                    Text("Start from scratch").font(.caption).foregroundStyle(palette.textSecondary)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(Theme.textFaint)
+                Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(palette.textFaint)
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -59,11 +60,11 @@ struct TemplatePickerView: View {
             HStack(spacing: 14) {
                 iconBadge(t.icon)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(t.title).font(.headline).foregroundStyle(Theme.textPrimary)
-                    Text(t.blurb).font(.caption).foregroundStyle(Theme.textSecondary)
+                    Text(t.title).font(.headline).foregroundStyle(palette.textPrimary)
+                    Text(t.blurb).font(.caption).foregroundStyle(palette.textSecondary)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(Theme.textFaint)
+                Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(palette.textFaint)
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(\.palette) private var palette
     @EnvironmentObject private var purchases: PurchaseManager
     @EnvironmentObject private var tm: ThemeManager
     @Environment(\.dismiss) private var dismiss
@@ -39,10 +40,10 @@ struct SettingsView: View {
         VStack(spacing: 6) {
             Text("CueCam")
                 .font(.system(size: 30, weight: .bold, design: .rounded))
-                .foregroundStyle(Theme.textPrimary)
+                .foregroundStyle(palette.textPrimary)
             Text("Your pocket teleprompter")
                 .font(.caption)
-                .foregroundStyle(Theme.textSecondary)
+                .foregroundStyle(palette.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 8)
@@ -53,7 +54,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("PROMPTER DEFAULTS")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(Theme.textFaint)
+                .foregroundStyle(palette.textFaint)
                 .tracking(0.5)
                 .padding(.leading, 4)
             PrompterPreferences()
@@ -64,10 +65,10 @@ struct SettingsView: View {
         VStack(spacing: 4) {
             Text("CueCam")
                 .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundStyle(Theme.textSecondary)
+                .foregroundStyle(palette.textSecondary)
             Text("Version \(appVersion)")
                 .font(.caption2)
-                .foregroundStyle(Theme.textFaint)
+                .foregroundStyle(palette.textFaint)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 8)
@@ -86,9 +87,9 @@ struct SettingsView: View {
                 Image(systemName: "hammer.fill").foregroundStyle(.orange).frame(width: 26)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Developer")
-                        .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                        .font(.subheadline.weight(.semibold)).foregroundStyle(palette.textPrimary)
                     Text("Test toggle. Not in the App Store build.")
-                        .font(.caption).foregroundStyle(Theme.textSecondary)
+                        .font(.caption).foregroundStyle(palette.textSecondary)
                 }
                 Spacer()
                 Toggle("", isOn: Binding(
@@ -114,10 +115,10 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(purchases.isPro ? "Pro unlocked" : "Free plan")
                         .font(.headline)
-                        .foregroundStyle(Theme.textPrimary)
+                        .foregroundStyle(palette.textPrimary)
                     Text(purchases.isPro ? "Thanks for your support." : "Up to \(ScriptStore.freeLimit) scripts.")
                         .font(.subheadline)
-                        .foregroundStyle(Theme.textSecondary)
+                        .foregroundStyle(palette.textSecondary)
                 }
                 Spacer()
             }
@@ -136,7 +137,7 @@ struct SettingsView: View {
                     Task { await purchases.restore() }
                 }
                 .font(.subheadline)
-                .foregroundStyle(Theme.textSecondary)
+                .foregroundStyle(palette.textSecondary)
             }
         }
         .padding(18)
@@ -163,7 +164,7 @@ struct SettingsView: View {
                 .frame(width: 26)
             Text(text)
                 .font(.subheadline)
-                .foregroundStyle(Theme.textSecondary)
+                .foregroundStyle(palette.textSecondary)
             Spacer()
         }
     }

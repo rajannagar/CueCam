@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Screen mode: read the script on a full-screen, themed background.
 struct TeleprompterView: View {
+    @Environment(\.palette) private var palette
     let script: Script
 
     @EnvironmentObject private var purchases: PurchaseManager
@@ -15,7 +16,7 @@ struct TeleprompterView: View {
     @AppStorage("tp.fontSize") private var fontSize: Double = 46
     @AppStorage("tp.mirror") private var mirror = false
     @AppStorage("tp.countdown") private var countdownEnabled = true
-    @AppStorage("tp.font") private var fontRaw = PrompterFont.rounded.rawValue
+    @AppStorage("tp.font") private var fontRaw = PrompterFont.serif.rawValue
     @AppStorage("tp.bold") private var bold = false
     @AppStorage("tp.textColorHex") private var textColorHex = ""
     @AppStorage("tp.focal") private var focal: Double = 0.40
@@ -32,7 +33,7 @@ struct TeleprompterView: View {
 
     private var theme: PrompterTheme { tm.selected }
     private var font: PrompterFont {
-        let f = PrompterFont(rawValue: fontRaw) ?? .rounded
+        let f = PrompterFont(rawValue: fontRaw) ?? .serif
         return (f.isFree || purchases.isPro) ? f : .rounded
     }
     private var usingVoice: Bool { voiceFollow && purchases.isPro }
@@ -112,7 +113,7 @@ struct TeleprompterView: View {
                 if usingVoice {
                     Label("Voice", systemImage: "waveform")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(voice.isListening ? tm.accent : Theme.textSecondary)
+                        .foregroundStyle(voice.isListening ? tm.accent : palette.textSecondary)
                 }
                 Spacer()
                 circleButton("slider.horizontal.3") { engine.isPlaying = false; showSettings = true }
@@ -140,9 +141,9 @@ struct TeleprompterView: View {
             }
             .padding(20)
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(.white.opacity(0.08), lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(palette.cardStroke, lineWidth: 1))
             .padding(.horizontal, 14).padding(.bottom, 14)
-            .shadow(color: .black.opacity(0.4), radius: 24, y: 10)
+            .shadow(color: .black.opacity(palette.isLight ? 0.12 : 0.4), radius: 24, y: 10)
         }
         .opacity(controlsVisible ? 1 : 0)
         .offset(y: controlsVisible ? 0 : 30)
@@ -165,25 +166,25 @@ struct TeleprompterView: View {
     private var speedReadout: some View {
         VStack(spacing: 2) {
             Image(systemName: usingVoice ? "waveform" : "speedometer")
-                .font(.system(size: 18, weight: .bold)).foregroundStyle(.white)
+                .font(.system(size: 18, weight: .bold)).foregroundStyle(palette.textPrimary)
             Text(usingVoice ? "voice" : "\(Int(speed))")
-                .font(.caption2).foregroundStyle(Theme.textFaint)
+                .font(.caption2).foregroundStyle(palette.textFaint)
         }
         .frame(width: 56, height: 56)
-        .background(.white.opacity(0.06), in: Circle())
+        .background(palette.textPrimary.opacity(0.06), in: Circle())
     }
 
     private func sliderRow(icon: String, value: Binding<Double>, range: ClosedRange<Double>, label: () -> String) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: icon).font(.system(size: 15)).foregroundStyle(Theme.textSecondary).frame(width: 24)
+            Image(systemName: icon).font(.system(size: 15)).foregroundStyle(palette.textSecondary).frame(width: 24)
             Slider(value: value, in: range).tint(tm.accent)
-            Text(label()).font(.caption.monospacedDigit()).foregroundStyle(Theme.textSecondary).frame(width: 56, alignment: .trailing)
+            Text(label()).font(.caption.monospacedDigit()).foregroundStyle(palette.textSecondary).frame(width: 56, alignment: .trailing)
         }
     }
 
     private func circleButton(_ name: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: name).font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
+            Image(systemName: name).font(.system(size: 15, weight: .semibold)).foregroundStyle(palette.textPrimary)
                 .frame(width: 40, height: 40).background(.ultraThinMaterial, in: Circle())
         }
         .buttonStyle(PressStyle())
@@ -191,8 +192,8 @@ struct TeleprompterView: View {
 
     private func softButton(_ name: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: name).font(.system(size: 20, weight: .semibold)).foregroundStyle(.white)
-                .frame(width: 56, height: 56).background(.white.opacity(0.08), in: Circle())
+            Image(systemName: name).font(.system(size: 20, weight: .semibold)).foregroundStyle(palette.textPrimary)
+                .frame(width: 56, height: 56).background(palette.textPrimary.opacity(0.08), in: Circle())
         }
         .buttonStyle(PressStyle())
     }
