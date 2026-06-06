@@ -3,7 +3,7 @@ import Speech
 import AVFoundation
 
 /// On-device speech recognition that reports how far through the script the speaker
-/// has read, so the prompter can scroll to match their pace. Free to run — no network.
+/// has read, so the prompter can scroll to match their pace. Free to run - no network.
 @MainActor
 final class VoiceFollow: NSObject, ObservableObject {
     @Published var isListening = false

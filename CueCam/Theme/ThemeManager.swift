@@ -11,7 +11,7 @@ final class ThemeManager: ObservableObject {
         didSet {
             UserDefaults.standard.set(selected.rawValue, forKey: Self.key)
             // Reset any custom text color so the new theme's high-contrast default
-            // takes over — keeps text readable on both screen and camera.
+            // takes over - keeps text readable on both screen and camera.
             if oldValue != selected {
                 UserDefaults.standard.removeObject(forKey: "tp.textColorHex")
             }

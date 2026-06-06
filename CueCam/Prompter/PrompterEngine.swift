@@ -5,7 +5,7 @@ import QuartzCore
 /// screen prompter and the camera prompter. Driven by a CADisplayLink for buttery
 /// 120Hz-capable motion.
 /// Holds only the scroll offset, which changes every frame. Isolating it in its own
-/// observable object means only the moving text re-renders at 120Hz — not the whole
+/// observable object means only the moving text re-renders at 120Hz - not the whole
 /// prompter UI (controls, materials, bars). This is what keeps scrolling buttery.
 @MainActor
 final class ScrollModel: ObservableObject {
@@ -62,7 +62,7 @@ final class PrompterEngine: NSObject, ObservableObject {
 
     /// Keep the first line parked at the start while idle. Re-runs on every layout
     /// change (the container size often arrives after the view's onAppear), so the
-    /// text is reliably at the top before the user hits play — regardless of timing.
+    /// text is reliably at the top before the user hits play - regardless of timing.
     private func pinToStartIfIdle() {
         guard !hasStarted, !isPlaying, !finished, containerHeight > 0 else { return }
         offset = startOffset
@@ -96,7 +96,7 @@ final class PrompterEngine: NSObject, ObservableObject {
 
         if voiceFollow {
             // Voice mode: the text only moves as far as the speaker has read. With no
-            // speech yet (progress nil/0) it stays put — it must not constant-scroll.
+            // speech yet (progress nil/0) it stays put - it must not constant-scroll.
             // Only ever move forward (a pause/stumble never jerks it back), with a
             // capped catch-up speed so recognition jumps resolve smoothly.
             let p = voiceProgress ?? 0

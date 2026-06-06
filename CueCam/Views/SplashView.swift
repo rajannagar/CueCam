@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Animated brand splash shown briefly at launch — wordmark only.
+/// Animated brand splash shown briefly at launch - wordmark only.
 struct SplashView: View {
     @State private var nameIn = false
     @State private var taglineIn = false

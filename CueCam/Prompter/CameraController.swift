@@ -5,7 +5,7 @@ import UIKit
 
 /// Wraps an AVCaptureSession for the camera prompter: live preview, front/back
 /// switching, and recording to the photo library. The on-screen script is NOT part
-/// of the recording — it's an overlay you read, so your video stays clean.
+/// of the recording - it's an overlay you read, so your video stays clean.
 @MainActor
 final class CameraController: NSObject, ObservableObject {
     enum Status { case idle, configuring, ready, denied, failed }

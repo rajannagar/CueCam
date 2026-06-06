@@ -16,7 +16,7 @@ struct ScriptTemplate: Identifiable {
             body: """
             What's up everyone, welcome back to the channel.
 
-            If you're new here, I make videos about [your topic] — so hit subscribe so you don't miss anything.
+            If you're new here, I make videos about [your topic], so hit subscribe so you don't miss anything.
 
             In today's video, I'm going to show you [the one big thing they'll learn]. By the end, you'll be able to [clear payoff].
 
@@ -28,7 +28,7 @@ struct ScriptTemplate: Identifiable {
             icon: "bolt.fill",
             blurb: "Stop-the-scroll opener",
             body: """
-            Stop scrolling — if you [audience], you need to hear this.
+            Stop scrolling. If you [audience], you need to hear this.
 
             Most people get [common mistake] completely wrong. Here's what to do instead.
 
@@ -48,7 +48,7 @@ struct ScriptTemplate: Identifiable {
 
             But here's what really matters. The day he met [partner], everything changed. He became [how they changed for the better].
 
-            So please, raise your glasses. To the happy couple — may your love grow stronger every single day. Cheers.
+            So please, raise your glasses. To the happy couple. May your love grow stronger every single day. Cheers.
             """
         ),
         ScriptTemplate(
@@ -58,7 +58,7 @@ struct ScriptTemplate: Identifiable {
             body: """
             [Partner], from the moment I met you, I knew my life would never be the same.
 
-            I promise to stand beside you in every season — to laugh with you, to listen to you, and to choose you, every single day.
+            I promise to stand beside you in every season: to laugh with you, to listen to you, and to choose you, every single day.
 
             I promise to be your partner, your safe place, and your biggest fan.
 
@@ -88,7 +88,7 @@ struct ScriptTemplate: Identifiable {
 
             Say you want to [common task]. Normally that takes [old way]. Watch this.
 
-            [Step one]. [Step two]. And just like that — done.
+            [Step one]. [Step two]. And just like that, done.
 
             That's the whole idea: [core benefit]. Want to try it yourself? Here's how to get started.
             """

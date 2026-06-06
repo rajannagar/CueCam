@@ -56,7 +56,7 @@ extension Color {
     }
 }
 
-/// A subtle ambient backdrop — a soft accent glow over deep charcoal.
+/// A subtle ambient backdrop - a soft accent glow over deep charcoal.
 /// Flat black backgrounds read as "cheap"; this gives quiet depth.
 struct AppBackground: View {
     @EnvironmentObject private var tm: ThemeManager
@@ -85,7 +85,7 @@ struct AppBackground: View {
 extension View {
     /// A reusable card container used throughout the app. A frosted translucent fill
     /// (which picks up the themed background behind it) with a soft top highlight, a
-    /// hairline edge, and a gentle drop shadow — so cards read as raised glass, not
+    /// hairline edge, and a gentle drop shadow - so cards read as raised glass, not
     /// flat gray boxes.
     func cardStyle() -> some View {
         let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)

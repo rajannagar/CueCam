@@ -7,13 +7,13 @@ on-device. No server, no accounts, no ongoing costs.
 Built in SwiftUI with a StoreKit 2 one-time unlock.
 
 ## Features
-- **Camera mode** — the script scrolls over the live camera while you record. The text
+- **Camera mode** - the script scrolls over the live camera while you record. The text
   is an on-screen overlay only; it is never burned into your video. Front/back camera,
   one-tap record, saves straight to Photos.
-- **Screen mode** — read on a clean, themed full-screen prompter.
-- **Voice-follow scrolling (Pro)** — the words advance as you speak, using on-device
+- **Screen mode** - read on a clean, themed full-screen prompter.
+- **Voice-follow scrolling (Pro)** - the words advance as you speak, using on-device
   speech recognition. Private and free to run.
-- **Themes & fonts (Pro)** — five color themes, four typefaces.
+- **Themes & fonts (Pro)** - five color themes, four typefaces.
 - Auto-hiding controls, a 3-2-1 countdown, a progress bar, adjustable speed and text
   size, mirror mode for beam-splitter rigs, and haptics throughout.
 - Scripts are stored locally as JSON.
@@ -27,7 +27,7 @@ Built in SwiftUI with a StoreKit 2 one-time unlock.
 ## Run it
 1. Open `CueCam.xcodeproj` in Xcode.
 2. Your signing team is already set. Pick your iPhone as the destination and press Run.
-3. Camera, microphone, and speech features need a real device — they do not work in the
+3. Camera, microphone, and speech features need a real device - they do not work in the
    Simulator.
 
 ## Test the paywall (before going live)

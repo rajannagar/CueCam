@@ -5,7 +5,7 @@ import MediaPlayer
 /// Detects hardware volume-button presses and reports them, without changing the
 /// actual volume or showing the system volume HUD. Used for hands-free play/pause.
 ///
-/// Note: this needs a real device — the Simulator has no volume buttons.
+/// Note: this needs a real device - the Simulator has no volume buttons.
 @MainActor
 final class VolumeButtonObserver: NSObject, ObservableObject {
     var onPress: () -> Void = {}
@@ -21,7 +21,7 @@ final class VolumeButtonObserver: NSObject, ObservableObject {
 
     /// - Parameter configuresSession: when true (screen mode) we own a quiet playback
     ///   session. In camera mode pass false so the capture session keeps owning audio
-    ///   and recording isn't disrupted — we just observe the volume passively.
+    ///   and recording isn't disrupted - we just observe the volume passively.
     func start(configuresSession: Bool = true) {
         guard !active else { return }
         active = true

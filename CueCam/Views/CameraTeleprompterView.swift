@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Camera mode: the script scrolls over the live camera while you record yourself.
-/// The text is an on-screen overlay only — it is never burned into the video.
+/// The text is an on-screen overlay only - it is never burned into the video.
 struct CameraTeleprompterView: View {
     let script: Script
 
