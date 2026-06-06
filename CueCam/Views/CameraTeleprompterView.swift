@@ -6,6 +6,7 @@ struct CameraTeleprompterView: View {
     let script: Script
 
     @EnvironmentObject private var purchases: PurchaseManager
+    @EnvironmentObject private var tm: ThemeManager
     @Environment(\.dismiss) private var dismiss
 
     @StateObject private var engine = PrompterEngine()
@@ -16,7 +17,6 @@ struct CameraTeleprompterView: View {
     @AppStorage("tp.fontSize") private var fontSize: Double = 44
     @AppStorage("tp.mirror") private var mirror = false
     @AppStorage("tp.countdown") private var countdownEnabled = true
-    @AppStorage("tp.theme") private var themeRaw = PrompterTheme.classic.rawValue
     @AppStorage("tp.font") private var fontRaw = PrompterFont.rounded.rawValue
     @AppStorage("tp.voiceFollow") private var voiceFollow = false
 
@@ -27,7 +27,7 @@ struct CameraTeleprompterView: View {
     @State private var recordArmed = false
     @State private var showToast = false
 
-    private var theme: PrompterTheme { PrompterTheme(rawValue: themeRaw) ?? .classic }
+    private var theme: PrompterTheme { tm.selected }
     private var font: PrompterFont { PrompterFont(rawValue: fontRaw) ?? .rounded }
     private var usingVoice: Bool { voiceFollow && purchases.isPro }
 
@@ -167,7 +167,7 @@ struct CameraTeleprompterView: View {
         ZStack {
             Color.black.opacity(0.9).ignoresSafeArea()
             VStack(spacing: 16) {
-                Image(systemName: "camera.fill").font(.system(size: 44)).foregroundStyle(Theme.accentGradient)
+                Image(systemName: "camera.fill").font(.system(size: 44)).foregroundStyle(tm.accentGradient)
                 Text("Camera access needed")
                     .font(.title3.weight(.bold)).foregroundStyle(.white)
                 Text(camera.message ?? "Enable Camera and Microphone in Settings.")
@@ -177,7 +177,7 @@ struct CameraTeleprompterView: View {
                 } label: {
                     Text("Open Settings").font(.headline)
                         .padding(.horizontal, 24).padding(.vertical, 12)
-                        .background(Theme.accentGradient, in: Capsule()).foregroundStyle(.black)
+                        .background(tm.accentGradient, in: Capsule()).foregroundStyle(.black)
                 }
                 Button("Close") { dismiss() }.foregroundStyle(Theme.textSecondary).padding(.top, 4)
             }
@@ -206,7 +206,7 @@ struct CameraTeleprompterView: View {
     private func sliderRow(icon: String, value: Binding<Double>, range: ClosedRange<Double>, label: () -> String) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon).font(.system(size: 15)).foregroundStyle(.white.opacity(0.8)).frame(width: 24)
-            Slider(value: value, in: range).tint(Theme.accent)
+            Slider(value: value, in: range).tint(tm.accent)
             Text(label()).font(.caption.monospacedDigit()).foregroundStyle(.white.opacity(0.8)).frame(width: 40, alignment: .trailing)
         }
     }

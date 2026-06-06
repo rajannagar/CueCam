@@ -19,6 +19,7 @@ final class VoiceFollow: NSObject, ObservableObject {
     /// Lowercased words of the script, used to match spoken words to a position.
     private var scriptWords: [String] = []
     private var matchedIndex = 0
+    private var spokenConsumed = 0
 
     func prepare(script: String) {
         scriptWords = script
@@ -26,6 +27,7 @@ final class VoiceFollow: NSObject, ObservableObject {
             .components(separatedBy: CharacterSet.alphanumerics.inverted)
             .filter { !$0.isEmpty }
         matchedIndex = 0
+        spokenConsumed = 0
         progress = 0
     }
 
@@ -111,12 +113,24 @@ final class VoiceFollow: NSObject, ObservableObject {
             .lowercased()
             .components(separatedBy: CharacterSet.alphanumerics.inverted)
             .filter { !$0.isEmpty }
-        guard !scriptWords.isEmpty, let lastSpoken = spoken.last else { return }
+        guard !scriptWords.isEmpty else { return }
 
-        let window = min(matchedIndex + 8, scriptWords.count)
-        for i in matchedIndex..<window where scriptWords[i] == lastSpoken {
-            matchedIndex = i + 1
-            break
+        // If the transcript shrank (recognizer restarted), resync from the beginning.
+        if spoken.count < spokenConsumed { spokenConsumed = 0 }
+
+        // Process every newly recognized word once, advancing the cursor through the
+        // script. Scanning a small look-ahead window tolerates stumbles and filler
+        // words, and consuming all new words (not just the last) keeps it in step.
+        while spokenConsumed < spoken.count {
+            let word = spoken[spokenConsumed]
+            let window = min(matchedIndex + 6, scriptWords.count)
+            if matchedIndex < window {
+                for i in matchedIndex..<window where scriptWords[i] == word {
+                    matchedIndex = i + 1
+                    break
+                }
+            }
+            spokenConsumed += 1
         }
         progress = Double(matchedIndex) / Double(scriptWords.count)
     }

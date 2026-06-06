@@ -6,8 +6,8 @@ import SwiftUI
 /// to the paywall.
 struct PrompterPreferences: View {
     @EnvironmentObject private var purchases: PurchaseManager
+    @EnvironmentObject private var tm: ThemeManager
 
-    @AppStorage("tp.theme") private var themeRaw = PrompterTheme.classic.rawValue
     @AppStorage("tp.font") private var fontRaw = PrompterFont.rounded.rawValue
     @AppStorage("tp.countdown") private var countdownEnabled = true
     @AppStorage("tp.mirror") private var mirror = false
@@ -31,7 +31,7 @@ struct PrompterPreferences: View {
                 ForEach(PrompterTheme.allCases) { theme in
                     Button {
                         if theme.isFree || purchases.isPro {
-                            themeRaw = theme.rawValue
+                            tm.selected = theme
                             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                         } else {
                             showPaywall = true
@@ -54,7 +54,7 @@ struct PrompterPreferences: View {
                                 }
                             }
                             .frame(height: 46)
-                            .overlay(Circle().stroke(Theme.accent, lineWidth: themeRaw == theme.rawValue ? 2.5 : 0))
+                            .overlay(Circle().stroke(tm.accent, lineWidth: tm.selected == theme ? 2.5 : 0))
                             Text(theme.title).font(.caption2).foregroundStyle(Theme.textSecondary)
                         }
                     }
@@ -88,7 +88,7 @@ struct PrompterPreferences: View {
                         .frame(height: 52)
                         .background(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(fontRaw == f.rawValue ? AnyShapeStyle(Theme.accentGradient) : AnyShapeStyle(Color.white.opacity(0.06)))
+                                .fill(fontRaw == f.rawValue ? AnyShapeStyle(tm.accentGradient) : AnyShapeStyle(Color.white.opacity(0.06)))
                         )
                     }
                     .buttonStyle(.plain)
@@ -114,21 +114,21 @@ struct PrompterPreferences: View {
 
     private func toggleRow(_ icon: String, _ title: String, isOn: Binding<Bool>) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: icon).foregroundStyle(Theme.accent).frame(width: 26)
+            Image(systemName: icon).foregroundStyle(tm.accent).frame(width: 26)
             Text(title).font(.subheadline.weight(.medium)).foregroundStyle(Theme.textPrimary)
             Spacer()
-            Toggle("", isOn: isOn).labelsHidden().tint(Theme.accent)
+            Toggle("", isOn: isOn).labelsHidden().tint(tm.accent)
         }
         .padding(.vertical, 6)
     }
 
     private func proToggleRow(_ icon: String, _ title: String, isOn: Binding<Bool>) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: icon).foregroundStyle(Theme.accent).frame(width: 26)
+            Image(systemName: icon).foregroundStyle(tm.accent).frame(width: 26)
             Text(title).font(.subheadline.weight(.medium)).foregroundStyle(Theme.textPrimary)
             Spacer()
             if purchases.isPro {
-                Toggle("", isOn: isOn).labelsHidden().tint(Theme.accent)
+                Toggle("", isOn: isOn).labelsHidden().tint(tm.accent)
             } else {
                 Button { showPaywall = true } label: {
                     HStack(spacing: 4) {
@@ -137,7 +137,7 @@ struct PrompterPreferences: View {
                     }
                     .foregroundStyle(.black)
                     .padding(.horizontal, 10).padding(.vertical, 5)
-                    .background(Theme.accentGradient, in: Capsule())
+                    .background(tm.accentGradient, in: Capsule())
                 }
                 .buttonStyle(.plain)
             }

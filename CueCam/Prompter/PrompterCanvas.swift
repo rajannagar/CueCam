@@ -4,6 +4,7 @@ import SwiftUI
 /// prompter and the camera prompter. It does not draw a background, so the camera
 /// feed (or a theme color placed behind it) shows through.
 struct PrompterCanvas: View {
+    @EnvironmentObject private var tm: ThemeManager
     @ObservedObject var engine: PrompterEngine
     let text: String
     let fontSize: Double
@@ -41,8 +42,12 @@ struct PrompterCanvas: View {
                 .opacity(dimText)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .onPreferenceChange(HeightKey.self) { engine.contentHeight = $0 }
-                .onAppear { engine.containerHeight = geo.size.height }
+                .onAppear {
+                    engine.firstLineLead = fontSize * 0.6
+                    engine.containerHeight = geo.size.height
+                }
                 .onChange(of: geo.size) { _, s in engine.containerHeight = s.height }
+                .onChange(of: fontSize) { _, s in engine.firstLineLead = s * 0.6 }
         }
     }
 
@@ -50,15 +55,15 @@ struct PrompterCanvas: View {
         GeometryReader { geo in
             let y = geo.size.height * engine.focalFraction
             ZStack {
-                Triangle().fill(Theme.accent).frame(width: 15, height: 20)
+                Triangle().fill(tm.accent).frame(width: 15, height: 20)
                     .rotationEffect(.degrees(90)).position(x: 16, y: y)
-                Triangle().fill(Theme.accent).frame(width: 15, height: 20)
+                Triangle().fill(tm.accent).frame(width: 15, height: 20)
                     .rotationEffect(.degrees(-90)).position(x: geo.size.width - 16, y: y)
                 LinearGradient(
-                    colors: [Theme.accent.opacity(0), Theme.accent.opacity(0.12), Theme.accent.opacity(0)],
+                    colors: [tm.accent.opacity(0), tm.accent.opacity(0.12), tm.accent.opacity(0)],
                     startPoint: .leading, endPoint: .trailing
                 )
-                .frame(height: fontSize * 1.7)
+                .frame(height: fontSize * 1.35)
                 .position(x: geo.size.width / 2, y: y)
             }
         }
@@ -70,7 +75,7 @@ struct PrompterCanvas: View {
             Color.black.opacity(0.5).ignoresSafeArea()
             Text("\(n)")
                 .font(.system(size: 140, weight: .bold, design: .rounded))
-                .foregroundStyle(Theme.accentGradient)
+                .foregroundStyle(tm.accentGradient)
                 .id(n)
                 .transition(.scale(scale: 0.4).combined(with: .opacity))
         }

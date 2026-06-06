@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PaywallView: View {
     @EnvironmentObject private var purchases: PurchaseManager
+    @EnvironmentObject private var tm: ThemeManager
     @Environment(\.dismiss) private var dismiss
 
     private let features: [(String, String, String)] = [
@@ -46,7 +47,7 @@ struct PaywallView: View {
         VStack(spacing: 14) {
             Image(systemName: "sparkles")
                 .font(.system(size: 46))
-                .foregroundStyle(Theme.accentGradient)
+                .foregroundStyle(tm.accentGradient)
             Text("CueCam Pro")
                 .font(.largeTitle.weight(.bold))
                 .foregroundStyle(Theme.textPrimary)
@@ -64,7 +65,7 @@ struct PaywallView: View {
                 HStack(spacing: 16) {
                     Image(systemName: feature.0)
                         .font(.title3)
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(tm.accent)
                         .frame(width: 34)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(feature.1)
@@ -98,7 +99,7 @@ struct PaywallView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(Theme.accentGradient, in: Capsule())
+                .background(tm.accentGradient, in: Capsule())
                 .foregroundStyle(.black)
             }
             .disabled(purchases.isLoading)

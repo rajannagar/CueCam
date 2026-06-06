@@ -5,6 +5,7 @@ struct TeleprompterView: View {
     let script: Script
 
     @EnvironmentObject private var purchases: PurchaseManager
+    @EnvironmentObject private var tm: ThemeManager
     @Environment(\.dismiss) private var dismiss
 
     @StateObject private var engine = PrompterEngine()
@@ -14,7 +15,6 @@ struct TeleprompterView: View {
     @AppStorage("tp.fontSize") private var fontSize: Double = 46
     @AppStorage("tp.mirror") private var mirror = false
     @AppStorage("tp.countdown") private var countdownEnabled = true
-    @AppStorage("tp.theme") private var themeRaw = PrompterTheme.classic.rawValue
     @AppStorage("tp.font") private var fontRaw = PrompterFont.rounded.rawValue
     @AppStorage("tp.voiceFollow") private var voiceFollow = false
 
@@ -23,7 +23,7 @@ struct TeleprompterView: View {
     @State private var showSettings = false
     @State private var dragBase: CGFloat?
 
-    private var theme: PrompterTheme { PrompterTheme(rawValue: themeRaw) ?? .classic }
+    private var theme: PrompterTheme { tm.selected }
     private var font: PrompterFont { PrompterFont(rawValue: fontRaw) ?? .rounded }
     private var usingVoice: Bool { voiceFollow && purchases.isPro }
 
@@ -82,7 +82,7 @@ struct TeleprompterView: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule().fill(theme.textColor.opacity(0.12))
-                Capsule().fill(Theme.accentGradient)
+                Capsule().fill(tm.accentGradient)
                     .frame(width: max(0, geo.size.width * engine.progress))
             }
             .frame(height: 3)
@@ -101,7 +101,7 @@ struct TeleprompterView: View {
                 if usingVoice {
                     Label("Voice", systemImage: "waveform")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(voice.isListening ? Theme.accent : Theme.textSecondary)
+                        .foregroundStyle(voice.isListening ? tm.accent : Theme.textSecondary)
                 }
                 Spacer()
                 circleButton("slider.horizontal.3") { engine.isPlaying = false; showSettings = true }
@@ -141,12 +141,12 @@ struct TeleprompterView: View {
     private var playButton: some View {
         Button { togglePlay() } label: {
             ZStack {
-                Circle().fill(Theme.accentGradient)
+                Circle().fill(tm.accentGradient)
                 Image(systemName: engine.finished ? "arrow.counterclockwise" : (engine.isPlaying ? "pause.fill" : "play.fill"))
                     .font(.system(size: 28, weight: .bold)).foregroundStyle(.black)
             }
             .frame(width: 72, height: 72)
-            .shadow(color: Theme.accent.opacity(0.4), radius: 12, y: 4)
+            .shadow(color: tm.accent.opacity(0.4), radius: 12, y: 4)
         }
         .buttonStyle(PressStyle())
     }
@@ -165,7 +165,7 @@ struct TeleprompterView: View {
     private func sliderRow(icon: String, value: Binding<Double>, range: ClosedRange<Double>, label: () -> String) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon).font(.system(size: 15)).foregroundStyle(Theme.textSecondary).frame(width: 24)
-            Slider(value: value, in: range).tint(Theme.accent)
+            Slider(value: value, in: range).tint(tm.accent)
             Text(label()).font(.caption.monospacedDigit()).foregroundStyle(Theme.textSecondary).frame(width: 56, alignment: .trailing)
         }
     }

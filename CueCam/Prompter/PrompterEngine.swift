@@ -31,8 +31,12 @@ final class PrompterEngine: NSObject, ObservableObject {
     private var lastTimestamp: CFTimeInterval = 0
     private var countdownTask: Task<Void, Never>?
 
-    /// First line sits at the focal line.
-    var startOffset: CGFloat { containerHeight * focalFraction }
+    /// Half the first line's height, so we can center the first line on the focal line
+    /// (not just align its top). Set by the view from the current font size.
+    var firstLineLead: CGFloat = 0
+
+    /// First line's center sits on the focal line.
+    var startOffset: CGFloat { containerHeight * focalFraction - firstLineLead }
     /// Scroll until the last line has passed the focal line, plus a little run-off.
     var endOffset: CGFloat { startOffset - contentHeight - containerHeight * 0.18 }
 
@@ -76,9 +80,16 @@ final class PrompterEngine: NSObject, ObservableObject {
         guard isPlaying, !finished, countdown == nil else { return }
 
         if voiceFollow, let p = voiceProgress {
-            // Ease toward the position that matches how far the speaker has read.
+            // Glide toward where the speaker has read. Only ever move forward (so a
+            // pause or a stumble never jerks the text backward), and cap the catch-up
+            // speed so big jumps in recognition resolve smoothly instead of snapping.
             let target = startOffset - CGFloat(p) * (startOffset - endOffset)
-            offset += (target - offset) * min(1, CGFloat(dt) * 6)
+            let delta = target - offset                 // negative => scroll up
+            if delta < 0 {
+                let eased = delta * min(1, CGFloat(dt) * 2.5)
+                let maxStep = CGFloat(max(speed, 100)) * 1.8 * CGFloat(dt)
+                offset += max(eased, -maxStep)
+            }
         } else {
             offset -= CGFloat(speed) * CGFloat(dt)
         }

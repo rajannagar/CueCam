@@ -37,23 +37,26 @@ enum Theme {
 /// A subtle ambient backdrop — a soft accent glow over deep charcoal.
 /// Flat black backgrounds read as "cheap"; this gives quiet depth.
 struct AppBackground: View {
+    @EnvironmentObject private var tm: ThemeManager
+
     var body: some View {
         ZStack {
-            Theme.bg
+            tm.selected.appBase
             RadialGradient(
-                colors: [Theme.accent.opacity(0.16), .clear],
+                colors: [tm.selected.appGlow.opacity(0.18), .clear],
                 center: .topLeading,
                 startRadius: 0,
                 endRadius: 520
             )
             RadialGradient(
-                colors: [Theme.accentDeep.opacity(0.14), .clear],
+                colors: [tm.selected.appGlow.opacity(0.12), .clear],
                 center: .bottomTrailing,
                 startRadius: 0,
                 endRadius: 480
             )
         }
         .ignoresSafeArea()
+        .animation(.easeInOut(duration: 0.4), value: tm.selected)
     }
 }
 

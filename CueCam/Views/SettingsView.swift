@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var purchases: PurchaseManager
+    @EnvironmentObject private var tm: ThemeManager
     @Environment(\.dismiss) private var dismiss
     @State private var showPaywall = false
 
@@ -35,10 +36,9 @@ struct SettingsView: View {
     }
 
     private var brandHeader: some View {
-        VStack(spacing: 10) {
-            CueCamLogo().frame(width: 64, height: 64)
+        VStack(spacing: 6) {
             Text("CueCam")
-                .font(.system(size: 26, weight: .bold, design: .rounded))
+                .font(.system(size: 30, weight: .bold, design: .rounded))
                 .foregroundStyle(Theme.textPrimary)
             Text("Your pocket teleprompter")
                 .font(.caption)
@@ -62,7 +62,9 @@ struct SettingsView: View {
 
     private var aboutFooter: some View {
         VStack(spacing: 4) {
-            CueCamWordmark(logoSize: 18, fontSize: 15)
+            Text("CueCam")
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundStyle(Theme.textSecondary)
             Text("Version \(appVersion)")
                 .font(.caption2)
                 .foregroundStyle(Theme.textFaint)
@@ -108,7 +110,7 @@ struct SettingsView: View {
             HStack {
                 Image(systemName: purchases.isPro ? "checkmark.seal.fill" : "sparkles")
                     .font(.title2)
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(tm.accent)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(purchases.isPro ? "Pro unlocked" : "Free plan")
                         .font(.headline)
@@ -127,7 +129,7 @@ struct SettingsView: View {
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(Theme.accentGradient, in: Capsule())
+                        .background(tm.accentGradient, in: Capsule())
                         .foregroundStyle(.black)
                 }
                 Button("Restore Purchase") {
@@ -157,7 +159,7 @@ struct SettingsView: View {
     private func row(_ icon: String, _ text: String) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(tm.accent)
                 .frame(width: 26)
             Text(text)
                 .font(.subheadline)

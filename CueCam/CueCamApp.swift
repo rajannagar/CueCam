@@ -4,14 +4,16 @@ import SwiftUI
 struct CueCamApp: App {
     @StateObject private var store = ScriptStore()
     @StateObject private var purchases = PurchaseManager()
+    @StateObject private var theme = ThemeManager()
 
     var body: some Scene {
         WindowGroup {
             RootContainer()
                 .environmentObject(store)
                 .environmentObject(purchases)
+                .environmentObject(theme)
                 .preferredColorScheme(.dark)
-                .tint(Theme.accent)
+                .tint(theme.accent)
                 .task {
                     await purchases.start()
                 }

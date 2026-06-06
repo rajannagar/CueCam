@@ -3,6 +3,7 @@ import SwiftUI
 struct ScriptListView: View {
     @EnvironmentObject private var store: ScriptStore
     @EnvironmentObject private var purchases: PurchaseManager
+    @EnvironmentObject private var tm: ThemeManager
 
     @State private var editingScript: Script?
     @State private var playingScript: Script?
@@ -31,7 +32,9 @@ struct ScriptListView: View {
                     }
                 }
                 ToolbarItem(placement: .principal) {
-                    CueCamWordmark(logoSize: 22, fontSize: 18)
+                    Text("CueCam")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.textPrimary)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -111,7 +114,7 @@ struct ScriptListView: View {
             HStack(spacing: 12) {
                 Image(systemName: "sparkles")
                     .font(.headline)
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(tm.accent)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Free plan")
                         .font(.subheadline.weight(.semibold))
@@ -135,7 +138,7 @@ struct ScriptListView: View {
         VStack(spacing: 20) {
             Image(systemName: "text.alignleft")
                 .font(.system(size: 54))
-                .foregroundStyle(Theme.accentGradient)
+                .foregroundStyle(tm.accentGradient)
             Text("No scripts yet")
                 .font(.title2.weight(.bold))
                 .foregroundStyle(Theme.textPrimary)
@@ -149,7 +152,7 @@ struct ScriptListView: View {
                     .font(.headline)
                     .padding(.horizontal, 28)
                     .padding(.vertical, 14)
-                    .background(Theme.accentGradient, in: Capsule())
+                    .background(tm.accentGradient, in: Capsule())
                     .foregroundStyle(.black)
             }
             .padding(.top, 4)
@@ -167,6 +170,7 @@ struct ScriptListView: View {
 }
 
 private struct ScriptCard: View {
+    @EnvironmentObject private var tm: ThemeManager
     let script: Script
     let onFilm: () -> Void
     let onPlay: () -> Void
@@ -199,7 +203,7 @@ private struct ScriptCard: View {
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(.black)
                             .frame(width: 44, height: 44)
-                            .background(Theme.accentGradient, in: Circle())
+                            .background(tm.accentGradient, in: Circle())
                     }
                     .buttonStyle(.plain)
                 }
