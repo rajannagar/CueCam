@@ -67,19 +67,11 @@ final class ScriptStore: ObservableObject {
         let sample = Script(
             title: "Welcome to CueCam",
             body: """
-            Hey there, and welcome to CueCam, your pocket teleprompter.
+            Welcome to CueCam, your pocket teleprompter.
 
-            Here's the idea: you read, the words scroll, and you never have to memorize a thing. Let me show you around while you read this.
+            Read your script on screen, or record yourself while it scrolls over the live camera. Make it yours with themes, fonts, and voice-follow.
 
-            See the speed and text-size sliders below? Slide them anytime to find a pace that feels natural. Tap once anywhere to pause, tap again to keep going, and drag up or down to jump to any line.
-
-            There are two ways to use a script. Tap the camera button to record yourself while the words glide over the live video. Your script stays on screen, but it never shows up in the recording. Or tap the text button to simply read on screen.
-
-            Want to make it yours? Open the sliders icon, or head to Settings, to choose from nine themes, pick a font, and set your text color.
-
-            A few favorites worth trying: turn on Voice-Follow and the script moves as you speak. Switch on Karaoke to keep the line you're reading bright while the rest dims. And use the volume buttons to play, pause, or record completely hands-free.
-
-            That's the tour. When you're ready, tap Edit to replace this with your own script: a video intro, a speech, a sales pitch, anything. Break a leg.
+            Tap Edit to add your own script, and you're ready to go.
             """
         )
         scripts = [sample]
