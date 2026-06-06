@@ -14,7 +14,8 @@ final class PrompterEngine: NSObject, ObservableObject {
     /// Layout, set by the view.
     var contentHeight: CGFloat = 0
     var containerHeight: CGFloat = 0 { didSet { pinToStartIfIdle() } }
-    let focalFraction: CGFloat = 0.40
+    /// Where the reading line sits, as a fraction of screen height (user-adjustable).
+    var focalFraction: CGFloat = 0.40
 
     /// True once the user has started playback or manually moved the text. Until then,
     /// the first line stays pinned to the start so play always begins at the top.

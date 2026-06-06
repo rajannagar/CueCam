@@ -9,19 +9,90 @@ struct PrompterPreferences: View {
     @EnvironmentObject private var tm: ThemeManager
 
     @AppStorage("tp.font") private var fontRaw = PrompterFont.rounded.rawValue
+    @AppStorage("tp.bold") private var bold = false
+    @AppStorage("tp.textColorHex") private var textColorHex = ""
+    @AppStorage("tp.focal") private var focal: Double = 0.40
     @AppStorage("tp.countdown") private var countdownEnabled = true
     @AppStorage("tp.mirror") private var mirror = false
     @AppStorage("tp.voiceFollow") private var voiceFollow = false
 
     @State private var showPaywall = false
 
+    private var customColorBinding: Binding<Color> {
+        Binding(
+            get: { Color(hex: textColorHex) ?? tm.selected.textColor },
+            set: { textColorHex = $0.toHex() }
+        )
+    }
+
     var body: some View {
         VStack(spacing: 16) {
             themeSection
             fontSection
+            textColorSection
+            readingPositionSection
             togglesSection
         }
         .sheet(isPresented: $showPaywall) { PaywallView() }
+    }
+
+    private var textColorSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionTitle("Text color")
+            HStack(spacing: 14) {
+                if purchases.isPro {
+                    ColorPicker("", selection: customColorBinding, supportsOpacity: false)
+                        .labelsHidden()
+                    Text(textColorHex.isEmpty ? "Theme default" : "Custom")
+                        .font(.subheadline).foregroundStyle(Theme.textSecondary)
+                    Spacer()
+                    if !textColorHex.isEmpty {
+                        Button("Reset") { textColorHex = "" }
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(tm.accent)
+                    }
+                } else {
+                    Image(systemName: "paintpalette.fill").foregroundStyle(tm.accent).frame(width: 26)
+                    Text("Choose any text color")
+                        .font(.subheadline).foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    proPill
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cardStyle()
+    }
+
+    private var readingPositionSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionTitle("Reading line position")
+            HStack(spacing: 14) {
+                Image(systemName: "arrow.up.and.down.text.horizontal")
+                    .foregroundStyle(tm.accent).frame(width: 26)
+                Slider(value: $focal, in: 0.2...0.6).tint(tm.accent)
+                Text("\(Int(focal * 100))%")
+                    .font(.caption.monospacedDigit()).foregroundStyle(Theme.textSecondary)
+                    .frame(width: 40, alignment: .trailing)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cardStyle()
+    }
+
+    private var proPill: some View {
+        Button { showPaywall = true } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "lock.fill").font(.caption2)
+                Text("Pro").font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(.black)
+            .padding(.horizontal, 10).padding(.vertical, 5)
+            .background(tm.accentGradient, in: Capsule())
+        }
+        .buttonStyle(.plain)
     }
 
     private var themeSection: some View {
@@ -69,8 +140,21 @@ struct PrompterPreferences: View {
 
     private var fontSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionTitle("Font")
-            HStack(spacing: 10) {
+            HStack {
+                sectionTitle("Font")
+                Spacer()
+                Button { bold.toggle(); UIImpactFeedbackGenerator(style: .soft).impactOccurred() } label: {
+                    Text("Bold")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(bold ? .black : Theme.textSecondary)
+                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .background(
+                            Capsule().fill(bold ? AnyShapeStyle(tm.accentGradient) : AnyShapeStyle(Color.white.opacity(0.08)))
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 4), spacing: 10) {
                 ForEach(PrompterFont.allCases) { f in
                     Button {
                         fontRaw = f.rawValue
@@ -78,7 +162,7 @@ struct PrompterPreferences: View {
                     } label: {
                         VStack(spacing: 4) {
                             Text("Aa")
-                                .font(.system(size: 18, weight: .semibold, design: f.design))
+                                .font(f.font(size: 18, bold: false))
                                 .foregroundStyle(fontRaw == f.rawValue ? .black : Theme.textPrimary)
                             Text(f.title)
                                 .font(.system(size: 9, weight: .medium))

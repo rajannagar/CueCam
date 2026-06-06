@@ -11,6 +11,7 @@ struct PrompterCanvas: View {
     let font: PrompterFont
     let textColor: Color
     let mirror: Bool
+    var bold: Bool = false
     var dimText: Double = 1.0          // camera mode dims text slightly for legibility over video
 
     var body: some View {
@@ -24,7 +25,7 @@ struct PrompterCanvas: View {
     private var scrollingText: some View {
         GeometryReader { geo in
             Text(text)
-                .font(.system(size: fontSize, weight: .semibold, design: font.design))
+                .font(font.font(size: fontSize, bold: bold))
                 .foregroundStyle(textColor)
                 .lineSpacing(fontSize * 0.32)
                 .multilineTextAlignment(.center)

@@ -16,6 +16,9 @@ struct TeleprompterView: View {
     @AppStorage("tp.mirror") private var mirror = false
     @AppStorage("tp.countdown") private var countdownEnabled = true
     @AppStorage("tp.font") private var fontRaw = PrompterFont.rounded.rawValue
+    @AppStorage("tp.bold") private var bold = false
+    @AppStorage("tp.textColorHex") private var textColorHex = ""
+    @AppStorage("tp.focal") private var focal: Double = 0.40
     @AppStorage("tp.voiceFollow") private var voiceFollow = false
 
     @State private var controlsVisible = true
@@ -26,14 +29,18 @@ struct TeleprompterView: View {
     private var theme: PrompterTheme { tm.selected }
     private var font: PrompterFont { PrompterFont(rawValue: fontRaw) ?? .rounded }
     private var usingVoice: Bool { voiceFollow && purchases.isPro }
+    private var textColor: Color {
+        if purchases.isPro, !textColorHex.isEmpty, let c = Color(hex: textColorHex) { return c }
+        return theme.textColor
+    }
 
     var body: some View {
         ZStack {
             theme.background.ignoresSafeArea()
 
             PrompterCanvas(engine: engine, text: script.body, fontSize: fontSize,
-                           font: font, textColor: theme.textColor,
-                           mirror: mirror && purchases.isPro)
+                           font: font, textColor: textColor,
+                           mirror: mirror && purchases.isPro, bold: bold)
                 .contentShape(Rectangle())
                 .gesture(dragGesture)
                 .onTapGesture { handleTap() }
@@ -48,9 +55,11 @@ struct TeleprompterView: View {
         .onAppear {
             engine.startLink()
             engine.speed = speed
+            engine.focalFraction = CGFloat(focal)
             engine.voiceFollow = usingVoice
             engine.reset()
         }
+        .onChange(of: focal) { _, v in engine.focalFraction = CGFloat(v); engine.reset() }
         .onDisappear { engine.stopLink(); voice.stop() }
         .onChange(of: speed) { _, v in engine.speed = v }
         .onChange(of: voiceFollow) { _, _ in engine.voiceFollow = usingVoice }
