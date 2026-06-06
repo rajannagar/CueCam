@@ -8,7 +8,8 @@ struct PaywallView: View {
     private let features: [(String, String, String)] = [
         ("infinity", "Unlimited scripts", "Save as many as you want, no caps."),
         ("waveform", "Voice-follow scrolling", "The script moves as you speak. On-device, private."),
-        ("paintbrush.pointed.fill", "Themes & fonts", "Five themes and four typefaces to read your way."),
+        ("highlighter", "Karaoke highlight", "The line you're reading stays bright, the rest dims."),
+        ("paintpalette.fill", "All themes & text colors", "Nine themes plus any custom text color you like."),
         ("rectangle.lefthalf.filled", "Mirror mode", "Flip text for beam-splitter camera rigs.")
     ]
 
