@@ -3,35 +3,29 @@ import Foundation
 import Photos
 import UIKit
 
-/// Drives the camera prompter: live preview, front/back switching (even mid-recording),
-/// and pausable recording via AVAssetWriter. The on-screen script is an overlay only —
-/// it is never part of the recorded video.
+/// Wraps an AVCaptureSession for the camera prompter: live preview, front/back
+/// switching, and recording to the photo library. The on-screen script is NOT part
+/// of the recording — it's an overlay you read, so your video stays clean.
 @MainActor
 final class CameraController: NSObject, ObservableObject {
     enum Status { case idle, configuring, ready, denied, failed }
 
     @Published var status: Status = .idle
     @Published var isRecording = false
-    @Published var isPaused = false
     @Published var position: AVCaptureDevice.Position = .front
     @Published var elapsed: TimeInterval = 0
     @Published var lastSavedOK: Bool? = nil
     @Published var message: String?
+    /// The most recent recording, kept around so it can be shared.
     @Published var lastRecordingURL: URL?
 
-    // These AVCapture objects are only ever touched on sessionQueue/dataQueue, so they
-    // are marked nonisolated(unsafe) to opt out of main-actor isolation safely.
     nonisolated(unsafe) let session = AVCaptureSession()
-    nonisolated(unsafe) private let videoOutput = AVCaptureVideoDataOutput()
-    nonisolated(unsafe) private let audioOutput = AVCaptureAudioDataOutput()
+    nonisolated(unsafe) private let movieOutput = AVCaptureMovieFileOutput()
     nonisolated private let sessionQueue = DispatchQueue(label: "cuecam.session")
-    nonisolated private let dataQueue = DispatchQueue(label: "cuecam.data")
-    nonisolated private let recorder = PausableRecorder()
-    nonisolated(unsafe) private var forwarder: CaptureForwarder?
     nonisolated(unsafe) private var videoInput: AVCaptureDeviceInput?
     private var timer: Timer?
 
-    // MARK: - Setup
+    // MARK: - Permissions & setup
 
     func configure() async {
         let camOK = await Self.granted(for: .video)
@@ -42,11 +36,9 @@ final class CameraController: NSObject, ObservableObject {
             return
         }
         status = .configuring
-        let forwarder = CaptureForwarder(recorder: recorder, videoOutput: videoOutput)
-        self.forwarder = forwarder
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             sessionQueue.async { [weak self] in
-                self?.buildSession(forwarder: forwarder)
+                self?.buildSession()
                 cont.resume()
             }
         }
@@ -60,48 +52,28 @@ final class CameraController: NSObject, ObservableObject {
         }
     }
 
-    private nonisolated func buildSession(forwarder: CaptureForwarder) {
+    private nonisolated func buildSession() {
         session.beginConfiguration()
         session.sessionPreset = .high
-        // We manage the audio session ourselves via AVAudioSession; let the capture
-        // session configure it for recording.
-        session.automaticallyConfiguresApplicationAudioSession = true
 
         if let device = Self.camera(for: .front),
            let input = try? AVCaptureDeviceInput(device: device),
            session.canAddInput(input) {
             session.addInput(input)
-            Task { @MainActor in self.videoInput = input }
+            self.videoInput = input
         }
         if let mic = AVCaptureDevice.default(for: .audio),
            let micInput = try? AVCaptureDeviceInput(device: mic),
            session.canAddInput(micInput) {
             session.addInput(micInput)
         }
-
-        videoOutput.alwaysDiscardsLateVideoFrames = true
-        videoOutput.setSampleBufferDelegate(forwarder, queue: dataQueue)
-        if session.canAddOutput(videoOutput) { session.addOutput(videoOutput) }
-
-        audioOutput.setSampleBufferDelegate(forwarder, queue: dataQueue)
-        if session.canAddOutput(audioOutput) { session.addOutput(audioOutput) }
-
-        configureVideoConnection(position: .front)
-
+        if session.canAddOutput(movieOutput) {
+            session.addOutput(movieOutput)
+            movieOutput.movieFragmentInterval = .invalid
+        }
         session.commitConfiguration()
         session.startRunning()
         Task { @MainActor in self.status = .ready }
-    }
-
-    private nonisolated func configureVideoConnection(position: AVCaptureDevice.Position) {
-        guard let c = videoOutput.connection(with: .video) else { return }
-        if #available(iOS 17.0, *), c.isVideoRotationAngleSupported(90) {
-            c.videoRotationAngle = 90    // portrait
-        }
-        if c.isVideoMirroringSupported {
-            c.automaticallyAdjustsVideoMirroring = false
-            c.isVideoMirrored = (position == .front)
-        }
     }
 
     private nonisolated static func camera(for position: AVCaptureDevice.Position) -> AVCaptureDevice? {
@@ -115,9 +87,10 @@ final class CameraController: NSObject, ObservableObject {
         }
     }
 
-    // MARK: - Switch camera (works while recording)
+    // MARK: - Switching camera (only when not recording)
 
     func switchCamera() {
+        guard !isRecording else { return }
         let newPosition: AVCaptureDevice.Position = position == .front ? .back : .front
         sessionQueue.async { [weak self] in
             guard let self else { return }
@@ -127,9 +100,9 @@ final class CameraController: NSObject, ObservableObject {
                let input = try? AVCaptureDeviceInput(device: device),
                self.session.canAddInput(input) {
                 self.session.addInput(input)
-                Task { @MainActor in self.videoInput = input; self.position = newPosition }
+                self.videoInput = input
+                Task { @MainActor in self.position = newPosition }
             }
-            self.configureVideoConnection(position: newPosition)
             self.session.commitConfiguration()
         }
     }
@@ -141,64 +114,56 @@ final class CameraController: NSObject, ObservableObject {
     }
 
     private func startRecording() {
-        guard status == .ready, !isRecording else { return }
-        let videoSettings = videoOutput.recommendedVideoSettingsForAssetWriter(writingTo: .mov)
-        let audioSettings = audioOutput.recommendedAudioSettingsForAssetWriter(writingTo: .mov)
-        recorder.start(videoSettings: videoSettings, audioSettings: audioSettings)
+        guard status == .ready, !movieOutput.isRecording else { return }
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("mov")
+        if let connection = movieOutput.connection(with: .video), connection.isVideoMirroringSupported {
+            connection.automaticallyAdjustsVideoMirroring = false
+            connection.isVideoMirrored = (position == .front)
+        }
+        movieOutput.startRecording(to: url, recordingDelegate: self)
         isRecording = true
-        isPaused = false
         lastSavedOK = nil
         elapsed = 0
-        startTimer()
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.elapsed += 0.1 }
+        }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
 
     private func stopRecording() {
-        guard isRecording else { return }
-        timer?.invalidate(); timer = nil
-        isRecording = false
-        isPaused = false
-        recorder.finish { [weak self] url in
-            Task { @MainActor in await self?.handleFinished(url) }
-        }
-    }
-
-    /// Pause/resume the recording itself (paused time is cut from the final video).
-    func pauseRecording() {
-        guard isRecording, !isPaused else { return }
-        isPaused = true
-        recorder.pause()
-        timer?.invalidate(); timer = nil
-    }
-
-    func resumeRecording() {
-        guard isRecording, isPaused else { return }
-        isPaused = false
-        recorder.resume()
-        startTimer()
-    }
-
-    private func startTimer() {
+        guard movieOutput.isRecording else { return }
+        movieOutput.stopRecording()
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.elapsed += 0.1 }
+        timer = nil
+    }
+}
+
+extension CameraController: AVCaptureFileOutputRecordingDelegate {
+    nonisolated func fileOutput(_ output: AVCaptureFileOutput,
+                                didFinishRecordingTo outputFileURL: URL,
+                                from connections: [AVCaptureConnection],
+                                error: Error?) {
+        let nsError = error as NSError?
+        let finishedOK = (nsError?.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool) ?? false
+        let succeeded = (error == nil) || finishedOK
+        let code = nsError?.code ?? 0
+
+        Task { @MainActor in
+            self.isRecording = false
+            if succeeded {
+                await self.save(outputFileURL)
+            } else {
+                self.message = "Recording failed (code \(code)). Please try again."
+                self.lastSavedOK = false
+                try? FileManager.default.removeItem(at: outputFileURL)
+            }
         }
     }
 
-    private func handleFinished(_ url: URL?) async {
-        guard let url else {
-            message = "Recording failed. Please try again."
-            lastSavedOK = false
-            return
-        }
-        let ok = await Self.saveToPhotos(url)
-        lastSavedOK = ok
-        message = ok ? "Saved to your photos." : "Couldn't save to Photos. Check permissions in Settings."
-        lastRecordingURL = url
-    }
-
-    private static func saveToPhotos(_ url: URL) async -> Bool {
-        await withCheckedContinuation { (cont: CheckedContinuation<Bool, Never>) in
+    private func save(_ url: URL) async {
+        let ok = await withCheckedContinuation { (cont: CheckedContinuation<Bool, Never>) in
             PHPhotoLibrary.requestAuthorization(for: .addOnly) { authStatus in
                 guard authStatus == .authorized || authStatus == .limited else {
                     cont.resume(returning: false); return
@@ -210,21 +175,8 @@ final class CameraController: NSObject, ObservableObject {
                 }
             }
         }
-    }
-}
-
-/// Forwards capture sample buffers to the recorder, tagging video vs audio.
-final class CaptureForwarder: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate {
-    private let recorder: PausableRecorder
-    private let videoOutput: AVCaptureVideoDataOutput
-
-    init(recorder: PausableRecorder, videoOutput: AVCaptureVideoDataOutput) {
-        self.recorder = recorder
-        self.videoOutput = videoOutput
-    }
-
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer,
-                       from connection: AVCaptureConnection) {
-        recorder.append(sampleBuffer, isVideo: output === videoOutput)
+        lastSavedOK = ok
+        message = ok ? "Saved to your photos." : "Couldn't save to Photos. Check permissions in Settings."
+        lastRecordingURL = url
     }
 }
