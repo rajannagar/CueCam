@@ -61,14 +61,32 @@ struct AppBackground: View {
 }
 
 extension View {
-    /// A reusable card container used throughout the app.
+    /// A reusable card container used throughout the app. A frosted translucent fill
+    /// (which picks up the themed background behind it) with a soft top highlight, a
+    /// hairline edge, and a gentle drop shadow — so cards read as raised glass, not
+    /// flat gray boxes.
     func cardStyle() -> some View {
-        self
-            .background(Theme.cardGradient)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
+        let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
+        return self
+            .background(.ultraThinMaterial, in: shape)
+            .background(
+                shape.fill(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.10), Color.white.opacity(0.02)],
+                        startPoint: .top, endPoint: .bottom
+                    )
+                )
             )
+            .overlay(
+                shape.stroke(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.18), Color.white.opacity(0.04)],
+                        startPoint: .top, endPoint: .bottom
+                    ),
+                    lineWidth: 1
+                )
+            )
+            .clipShape(shape)
+            .shadow(color: .black.opacity(0.28), radius: 14, x: 0, y: 8)
     }
 }

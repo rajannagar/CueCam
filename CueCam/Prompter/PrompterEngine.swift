@@ -79,10 +79,12 @@ final class PrompterEngine: NSObject, ObservableObject {
     private func advance(_ dt: CFTimeInterval) {
         guard isPlaying, !finished, countdown == nil else { return }
 
-        if voiceFollow, let p = voiceProgress {
-            // Glide toward where the speaker has read. Only ever move forward (so a
-            // pause or a stumble never jerks the text backward), and cap the catch-up
-            // speed so big jumps in recognition resolve smoothly instead of snapping.
+        if voiceFollow {
+            // Voice mode: the text only moves as far as the speaker has read. With no
+            // speech yet (progress nil/0) it stays put — it must not constant-scroll.
+            // Only ever move forward (a pause/stumble never jerks it back), with a
+            // capped catch-up speed so recognition jumps resolve smoothly.
+            let p = voiceProgress ?? 0
             let target = startOffset - CGFloat(p) * (startOffset - endOffset)
             let delta = target - offset                 // negative => scroll up
             if delta < 0 {
