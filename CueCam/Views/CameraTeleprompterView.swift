@@ -37,8 +37,12 @@ struct CameraTeleprompterView: View {
     @State private var showShare = false
 
     private var theme: PrompterTheme { tm.selected }
-    private var font: PrompterFont { PrompterFont(rawValue: fontRaw) ?? .rounded }
+    private var font: PrompterFont {
+        let f = PrompterFont(rawValue: fontRaw) ?? .rounded
+        return (f.isFree || purchases.isPro) ? f : .rounded
+    }
     private var usingVoice: Bool { voiceFollow && purchases.isPro }
+    private var usingVolume: Bool { volumeControl && purchases.isPro }
 
     var body: some View {
         ZStack {
@@ -74,14 +78,14 @@ struct CameraTeleprompterView: View {
             engine.voiceFollow = usingVoice
             engine.reset()
             await camera.configure()
-            if volumeControl {
+            if usingVolume {
                 volume.onPress = { tapRecord() }
                 volume.start(configuresSession: false)
             }
         }
         .onChange(of: focal) { _, v in engine.focalFraction = CGFloat(v); engine.reset() }
-        .onChange(of: volumeControl) { _, on in
-            if on { volume.onPress = { tapRecord() }; volume.start(configuresSession: false) }
+        .onChange(of: volumeControl) { _, _ in
+            if usingVolume { volume.onPress = { tapRecord() }; volume.start(configuresSession: false) }
             else { volume.stop() }
         }
         .onDisappear { engine.stopLink(); camera.stop(); voice.stop(); volume.stop() }

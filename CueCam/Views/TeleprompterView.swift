@@ -31,8 +31,12 @@ struct TeleprompterView: View {
     @State private var dragBase: CGFloat?
 
     private var theme: PrompterTheme { tm.selected }
-    private var font: PrompterFont { PrompterFont(rawValue: fontRaw) ?? .rounded }
+    private var font: PrompterFont {
+        let f = PrompterFont(rawValue: fontRaw) ?? .rounded
+        return (f.isFree || purchases.isPro) ? f : .rounded
+    }
     private var usingVoice: Bool { voiceFollow && purchases.isPro }
+    private var usingVolume: Bool { volumeControl && purchases.isPro }
     private var textColor: Color {
         if purchases.isPro, !textColorHex.isEmpty, let c = Color(hex: textColorHex) { return c }
         return theme.textColor
@@ -64,14 +68,14 @@ struct TeleprompterView: View {
             engine.focalFraction = CGFloat(focal)
             engine.voiceFollow = usingVoice
             engine.reset()
-            if volumeControl {
+            if usingVolume {
                 volume.onPress = { togglePlay() }
                 volume.start()
             }
         }
         .onChange(of: focal) { _, v in engine.focalFraction = CGFloat(v); engine.reset() }
-        .onChange(of: volumeControl) { _, on in
-            if on { volume.onPress = { togglePlay() }; volume.start() } else { volume.stop() }
+        .onChange(of: volumeControl) { _, _ in
+            if usingVolume { volume.onPress = { togglePlay() }; volume.start() } else { volume.stop() }
         }
         .onDisappear { engine.stopLink(); voice.stop(); volume.stop() }
         .onChange(of: speed) { _, v in engine.speed = v }

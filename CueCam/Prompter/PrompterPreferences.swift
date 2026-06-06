@@ -158,9 +158,10 @@ struct PrompterPreferences: View {
             }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 4), spacing: 10) {
                 ForEach(PrompterFont.allCases) { f in
+                    let locked = !f.isFree && !purchases.isPro
                     Button {
-                        fontRaw = f.rawValue
-                        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                        if locked { showPaywall = true }
+                        else { fontRaw = f.rawValue; UIImpactFeedbackGenerator(style: .soft).impactOccurred() }
                     } label: {
                         VStack(spacing: 4) {
                             Text("Aa")
@@ -176,6 +177,17 @@ struct PrompterPreferences: View {
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
                                 .fill(fontRaw == f.rawValue ? AnyShapeStyle(tm.accentGradient) : AnyShapeStyle(Color.white.opacity(0.06)))
                         )
+                        .overlay(alignment: .topTrailing) {
+                            if locked {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 8, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .padding(4)
+                                    .background(Circle().fill(.black.opacity(0.5)))
+                                    .padding(4)
+                            }
+                        }
+                        .opacity(locked ? 0.6 : 1)
                     }
                     .buttonStyle(.plain)
                 }
@@ -190,7 +202,7 @@ struct PrompterPreferences: View {
         VStack(spacing: 4) {
             toggleRow("timer", "3-2-1 countdown", isOn: $countdownEnabled)
             Divider().overlay(Color.white.opacity(0.06))
-            toggleRow("speaker.wave.2.fill", "Volume-button control", isOn: $volumeControl)
+            proToggleRow("speaker.wave.2.fill", "Volume-button control", isOn: $volumeControl)
             Divider().overlay(Color.white.opacity(0.06))
             proToggleRow("rectangle.lefthalf.filled", "Mirror mode", isOn: $mirror)
             Divider().overlay(Color.white.opacity(0.06))

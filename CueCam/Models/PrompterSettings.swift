@@ -134,6 +134,9 @@ enum PrompterFont: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// The three fonts available without Pro.
+    var isFree: Bool { self == .rounded || self == .standard || self == .serif }
+
     var title: String {
         switch self {
         case .rounded: return "Rounded"
