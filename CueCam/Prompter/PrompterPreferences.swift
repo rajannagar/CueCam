@@ -17,6 +17,7 @@ struct PrompterPreferences: View {
     @AppStorage("tp.voiceFollow") private var voiceFollow = false
     @AppStorage("tp.karaoke") private var karaoke = false
     @AppStorage("tp.volumeControl") private var volumeControl = false
+    @AppStorage("tp.linkRecording") private var linkRecording = true
 
     @State private var showPaywall = false
 
@@ -189,6 +190,8 @@ struct PrompterPreferences: View {
     private var togglesSection: some View {
         VStack(spacing: 4) {
             toggleRow("timer", "3-2-1 countdown", isOn: $countdownEnabled)
+            Divider().overlay(Color.white.opacity(0.06))
+            toggleRow("pause.circle", "Pause recording when paused", isOn: $linkRecording)
             Divider().overlay(Color.white.opacity(0.06))
             toggleRow("speaker.wave.2.fill", "Volume-button control", isOn: $volumeControl)
             Divider().overlay(Color.white.opacity(0.06))

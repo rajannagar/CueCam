@@ -25,6 +25,7 @@ struct CameraTeleprompterView: View {
     @AppStorage("tp.karaoke") private var karaoke = false
     @AppStorage("tp.aspect") private var aspectRaw = AspectGuide.off.rawValue
     @AppStorage("tp.volumeControl") private var volumeControl = false
+    @AppStorage("tp.linkRecording") private var linkRecording = true
 
     @StateObject private var volume = VolumeButtonObserver()
 
@@ -89,9 +90,16 @@ struct CameraTeleprompterView: View {
         .onChange(of: voiceFollow) { _, _ in engine.voiceFollow = usingVoice }
         .onChange(of: voice.progress) { _, p in engine.voiceProgress = p }
         .onChange(of: engine.isPlaying) { _, playing in
-            if recordArmed && playing && !camera.isRecording { camera.toggleRecording() }
+            if recordArmed && playing && !camera.isRecording {
+                camera.toggleRecording()                 // start recording when the scroll begins
+            } else if linkRecording && camera.isRecording {
+                if playing { camera.resumeRecording() } else { camera.pauseRecording() }
+            }
             syncVoice(playing: playing)
             scheduleHide()
+        }
+        .onChange(of: engine.finished) { _, finished in
+            if finished && camera.isRecording { camera.toggleRecording() }  // auto-stop at the end
         }
         .onChange(of: camera.lastSavedOK) { _, v in
             guard v != nil else { return }
@@ -149,8 +157,10 @@ struct CameraTeleprompterView: View {
 
     private var recordingPill: some View {
         HStack(spacing: 6) {
-            Circle().fill(.red).frame(width: 8, height: 8)
-            Text(timeString(camera.elapsed))
+            Circle().fill(camera.isPaused ? .yellow : .red)
+                .frame(width: 8, height: 8)
+                .opacity(camera.isPaused ? 0.9 : 1)
+            Text(camera.isPaused ? "Paused" : timeString(camera.elapsed))
                 .font(.caption.monospacedDigit().weight(.semibold))
                 .foregroundStyle(.white)
         }
