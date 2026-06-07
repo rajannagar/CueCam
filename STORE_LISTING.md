@@ -83,6 +83,15 @@ script scrolling for you. Voice-follow, karaoke highlight, six reader themes, an
 6. Write or paste any script
 7. One-time unlock. No subscription.
 
+## App preview video
+A rendered ~28s product tour is at `marketing/CueCam-preview.mov` (1320x2868, the
+6.9" App Store size, under the 30s limit). It covers: title, reading + scrolling,
+live theme switching, karaoke, a feature montage, and an end card.
+
+Before publishing, polish it in any editor: add soft background music, and (ideally)
+splice in one real clip of you talking to camera while the script scrolls, which the
+Simulator cannot capture. Storyboard for that version below.
+
 ## App preview video (15-30s storyboard)
 1. (0-3s) Open on the Paper home screen, tap a script. Caption: "Your pocket teleprompter."
 2. (3-8s) Screen prompter scrolling smoothly in serif. Caption: "Read it, don't memorize it."
