@@ -11,7 +11,7 @@ struct PaywallView: View {
         ("waveform", "Voice-follow scrolling", "The script moves as you speak. On-device, private."),
         ("highlighter", "Karaoke highlight", "The line you're reading stays bright, the rest dims."),
         ("speaker.wave.2.fill", "Hands-free volume control", "Play, pause, and record with the volume buttons."),
-        ("paintpalette.fill", "Themes, fonts & colors", "9 themes, 7 fonts, and any custom text color."),
+        ("paintpalette.fill", "Themes, fonts & colors", "Every reader theme, all fonts, and any custom text color."),
         ("rectangle.lefthalf.filled", "Mirror mode", "Flip text for beam-splitter camera rigs.")
     ]
 
