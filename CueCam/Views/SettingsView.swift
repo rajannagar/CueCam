@@ -6,6 +6,8 @@ struct SettingsView: View {
     @EnvironmentObject private var tm: ThemeManager
     @Environment(\.dismiss) private var dismiss
     @State private var showPaywall = false
+    @State private var currentIcon: AppIconOption = .sepia
+    @AppStorage("tp.matchIcon") private var matchIcon = false
 
     var body: some View {
         NavigationStack {
@@ -16,6 +18,7 @@ struct SettingsView: View {
                         brandHeader
                         statusCard
                         prompterSection
+                        iconSection
                         infoCard
                         #if DEBUG
                         debugCard
@@ -33,6 +36,64 @@ struct SettingsView: View {
                 }
             }
             .sheet(isPresented: $showPaywall) { PaywallView() }
+            .onAppear { currentIcon = AppIconOption.from(iconName: UIApplication.shared.alternateIconName) }
+        }
+    }
+
+    private var iconSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("APP ICON")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(palette.textFaint)
+                .tracking(0.5)
+                .padding(.leading, 4)
+
+            VStack(spacing: 14) {
+                HStack(spacing: 14) {
+                    ForEach(AppIconOption.allCases) { option in
+                        Button {
+                            applyAppIcon(option)
+                            currentIcon = option
+                        } label: {
+                            VStack(spacing: 6) {
+                                IconArtwork(option: option)
+                                    .frame(width: 56, height: 56)
+                                    .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                            .stroke(palette.accent, lineWidth: currentIcon == option ? 2.5 : 0)
+                                    )
+                                Text(option.title)
+                                    .font(.caption2)
+                                    .foregroundStyle(palette.textSecondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(matchIcon)
+                        .opacity(matchIcon ? 0.4 : 1)
+                    }
+                }
+
+                Divider().overlay(palette.cardStroke)
+
+                HStack(spacing: 14) {
+                    Image(systemName: "wand.and.stars").foregroundStyle(palette.accent).frame(width: 26)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Match icon to theme")
+                            .font(.subheadline.weight(.medium)).foregroundStyle(palette.textPrimary)
+                        Text("Switches the icon when you change theme.")
+                            .font(.caption).foregroundStyle(palette.textSecondary)
+                    }
+                    Spacer()
+                    Toggle("", isOn: $matchIcon).labelsHidden().tint(palette.accent)
+                }
+                .onChange(of: matchIcon) { _, on in
+                    if on { applyAppIcon(AppIconOption.matching(tm.selected)); currentIcon = AppIconOption.matching(tm.selected) }
+                }
+            }
+            .padding(16)
+            .cardStyle()
         }
     }
 

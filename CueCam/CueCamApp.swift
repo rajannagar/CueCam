@@ -24,6 +24,8 @@ struct CueCamApp: App {
 
 /// Shows the animated splash on launch, then crossfades into the app.
 private struct RootContainer: View {
+    @EnvironmentObject private var tm: ThemeManager
+    @AppStorage("tp.matchIcon") private var matchIcon = false
     @State private var showSplash = true
 
     var body: some View {
@@ -38,6 +40,9 @@ private struct RootContainer: View {
         .task {
             try? await Task.sleep(nanoseconds: 1_900_000_000)
             withAnimation(.easeInOut(duration: 0.55)) { showSplash = false }
+        }
+        .onChange(of: tm.selected) { _, theme in
+            if matchIcon { applyAppIcon(AppIconOption.matching(theme)) }
         }
     }
 }

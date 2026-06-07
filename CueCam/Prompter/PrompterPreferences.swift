@@ -114,7 +114,7 @@ struct PrompterPreferences: View {
                         VStack(spacing: 6) {
                             ZStack {
                                 Circle().fill(theme.background)
-                                    .overlay(Circle().stroke(.white.opacity(0.15), lineWidth: 1))
+                                    .overlay(Circle().stroke(palette.cardStroke, lineWidth: 1))
                                 Text("Aa")
                                     .font(.system(size: 15, weight: .bold, design: .rounded))
                                     .foregroundStyle(theme.textColor)
@@ -152,7 +152,7 @@ struct PrompterPreferences: View {
                         .foregroundStyle(bold ? .black : palette.textSecondary)
                         .padding(.horizontal, 12).padding(.vertical, 6)
                         .background(
-                            Capsule().fill(bold ? AnyShapeStyle(tm.accentGradient) : AnyShapeStyle(Color.white.opacity(0.08)))
+                            Capsule().fill(bold ? AnyShapeStyle(tm.accentGradient) : AnyShapeStyle(palette.textPrimary.opacity(0.08)))
                         )
                 }
                 .buttonStyle(.plain)
@@ -176,7 +176,7 @@ struct PrompterPreferences: View {
                         .frame(height: 52)
                         .background(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(fontRaw == f.rawValue ? AnyShapeStyle(tm.accentGradient) : AnyShapeStyle(Color.white.opacity(0.06)))
+                                .fill(fontRaw == f.rawValue ? AnyShapeStyle(tm.accentGradient) : AnyShapeStyle(palette.textPrimary.opacity(0.06)))
                         )
                         .overlay(alignment: .topTrailing) {
                             if locked {
@@ -202,13 +202,13 @@ struct PrompterPreferences: View {
     private var togglesSection: some View {
         VStack(spacing: 4) {
             toggleRow("timer", "3-2-1 countdown", isOn: $countdownEnabled)
-            Divider().overlay(Color.white.opacity(0.06))
+            Divider().overlay(palette.cardStroke)
             proToggleRow("speaker.wave.2.fill", "Volume-button control", isOn: $volumeControl)
-            Divider().overlay(Color.white.opacity(0.06))
+            Divider().overlay(palette.cardStroke)
             proToggleRow("rectangle.lefthalf.filled", "Mirror mode", isOn: $mirror)
-            Divider().overlay(Color.white.opacity(0.06))
+            Divider().overlay(palette.cardStroke)
             proToggleRow("highlighter", "Karaoke highlight", isOn: $karaoke)
-            Divider().overlay(Color.white.opacity(0.06))
+            Divider().overlay(palette.cardStroke)
             proToggleRow("waveform", "Voice-follow scrolling", isOn: $voiceFollow)
         }
         .padding(16)

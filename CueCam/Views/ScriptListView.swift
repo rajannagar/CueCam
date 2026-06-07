@@ -212,7 +212,7 @@ private struct ScriptCard: View {
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(palette.textPrimary)
                             .frame(width: 44, height: 44)
-                            .background(.white.opacity(0.08), in: Circle())
+                            .background(palette.textPrimary.opacity(0.08), in: Circle())
                     }
                     .buttonStyle(.plain)
                     Button(action: onFilm) {

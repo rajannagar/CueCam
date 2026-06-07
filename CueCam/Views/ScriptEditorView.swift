@@ -80,7 +80,7 @@ struct ScriptEditorView: View {
             .padding(.top, 14)
             .padding(.bottom, 8)
 
-            Divider().overlay(Color.white.opacity(0.06))
+            Divider().overlay(palette.cardStroke)
 
             ZStack(alignment: .topLeading) {
                 if draft.body.isEmpty {
