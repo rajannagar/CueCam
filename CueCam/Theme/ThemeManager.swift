@@ -18,7 +18,9 @@ final class ThemeManager: ObservableObject {
 
     init() {
         let raw = UserDefaults.standard.string(forKey: Self.key) ?? PrompterTheme.paper.rawValue
-        selected = PrompterTheme(rawValue: raw) ?? .paper
+        var initial = PrompterTheme(rawValue: raw) ?? .paper
+        if let t = ProcessInfo.processInfo.environment["TP_THEME"], let th = PrompterTheme(rawValue: t) { initial = th }
+        selected = initial
     }
 
     var palette: ReaderPalette { selected.palette }

@@ -29,6 +29,13 @@ private struct RootContainer: View {
     @State private var showSplash = true
 
     var body: some View {
+        if let shot = ProcessInfo.processInfo.environment["TP_SHOT"] {
+            return AnyView(ShotProbe(shot: shot))
+        }
+        return AnyView(content)
+    }
+
+    private var content: some View {
         ZStack {
             ScriptListView()
             if showSplash {
@@ -44,5 +51,40 @@ private struct RootContainer: View {
         .onChange(of: tm.selected) { _, theme in
             if matchIcon { applyAppIcon(AppIconOption.matching(theme)) }
         }
+    }
+}
+
+private struct ShotProbe: View {
+    @EnvironmentObject private var store: ScriptStore
+    @EnvironmentObject private var purchases: PurchaseManager
+    @Environment(\.palette) private var palette
+    let shot: String
+    init(shot: String) {
+        self.shot = shot
+        UserDefaults.standard.set(shot == "voice", forKey: "tp.voiceFollow")
+    }
+    private var sample: Script { store.scripts.first ?? Script(title: "Demo", body: "Hello") }
+    var body: some View {
+        Group {
+            switch shot {
+            case "prompter", "voice": TeleprompterView(script: sample)
+            case "settings": SettingsView()
+            case "editor": ScriptEditorView(script: sample)
+            case "paywall": Color.clear.sheet(isPresented: .constant(true)) { PaywallView() }
+            case "karaoke": KaraokeShot().background(palette.background.ignoresSafeArea())
+            default: ScriptListView()
+            }
+        }
+    }
+}
+
+private struct KaraokeShot: View {
+    @StateObject private var engine = PrompterEngine()
+    @Environment(\.palette) private var palette
+    private let text = "This is the line you are reading right now.\n\nThe lines below stay dim until they reach the reading point, so your eyes never lose their place while you talk."
+    var body: some View {
+        PrompterCanvas(engine: engine, text: text, fontSize: 50, font: .serif,
+                       textColor: palette.textPrimary, mirror: false, bold: false, karaoke: true)
+            .onAppear { engine.startLink() }
     }
 }
