@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- CueCam collects nothing and tracks nobody. The app makes no
+	     network requests of its own: scripts stay in its own Documents
+	     directory and voice-follow transcribes on device. The only
+	     required-reason API it touches is UserDefaults, used to remember
+	     the chosen theme and the voice-follow toggle, which is CA92.1
+	     (accessing information from the app itself). Verified against
+	     the four call sites in CueCamApp.swift and ThemeManager.swift;
+	     no file-timestamp, disk-space, system-boot or keyboard APIs are
+	     used anywhere in the target. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
