@@ -221,7 +221,7 @@ struct TeleprompterView: View {
             .onEnded { _ in
                 dragBase = nil
                 engine.finished = false
-                if usingVoice { voice.reseed(to: Double(engine.progress)) }
+                if usingVoice { voice.reseed(to: engine.textFraction) }
             }
     }
 
@@ -240,7 +240,7 @@ struct TeleprompterView: View {
                 if !voice.authorized { await voice.requestAuthorization() }
                 // Seed from the current scroll position: resuming mid-script
                 // must not wait for words the reader said minutes ago.
-                voice.prepare(script: script.body, startProgress: Double(engine.progress))
+                voice.prepare(script: script.body, startProgress: engine.textFraction)
                 voice.start()
             }
         } else {

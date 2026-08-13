@@ -60,6 +60,15 @@ final class PrompterEngine: NSObject, ObservableObject {
         return min(1, max(0, (startOffset - offset) / (startOffset - endOffset)))
     }
 
+    /// Reading position on voice mode's scale: 0 = first line on the reading
+    /// line, 1 = last line on it. This is the fraction to seed the voice
+    /// matcher with; `progress` runs on manual mode's longer scale (it includes
+    /// the run-off) and would seed the matcher behind the reader.
+    var textFraction: Double {
+        guard contentHeight > 1 else { return 0 }
+        return Double(min(1, max(0, (startOffset - offset) / contentHeight)))
+    }
+
     /// Keep the first line parked at the start while idle. Re-runs on every layout
     /// change (the container size often arrives after the view's onAppear), so the
     /// text is reliably at the top before the user hits play - regardless of timing.
@@ -100,7 +109,11 @@ final class PrompterEngine: NSObject, ObservableObject {
             // Only ever move forward (a pause/stumble never jerks it back), with a
             // capped catch-up speed so recognition jumps resolve smoothly.
             let p = voiceProgress ?? 0
-            let target = startOffset - CGFloat(p) * (startOffset - endOffset)
+            // Align the word at fraction p of the script with the reading line.
+            // Manual mode's endOffset includes a run-off past the last line; using
+            // it here pushed the spoken line above the arrows, worse the further
+            // into the script the reader got.
+            let target = startOffset - CGFloat(p) * contentHeight
             let delta = target - offset                 // negative => scroll up
             if delta < 0 {
                 // Close most of the gap within about 0.15s so the text visibly
@@ -109,6 +122,14 @@ final class PrompterEngine: NSObject, ObservableObject {
                 let eased = delta * min(1, CGFloat(dt) * 6.5)
                 let maxStep = CGFloat(max(speed, 140)) * 3.0 * CGFloat(dt)
                 offset += max(eased, -maxStep)
+            }
+            // The voice target never reaches manual mode's endOffset, so finish
+            // explicitly once every word is matched and the scroll has settled.
+            if contentHeight > 1, p >= 1, delta > -2 {
+                isPlaying = false
+                finished = true
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                return
             }
         } else {
             offset -= CGFloat(speed) * CGFloat(dt)
