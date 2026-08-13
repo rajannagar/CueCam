@@ -52,6 +52,8 @@ Built in SwiftUI with a StoreKit 2 one-time unlock.
 ## App Store status
 - Live since June 10, 2026 as version 1.0. The CueCam Pro unlock
   (`com.rajannagar.CueCam.pro`, $6.99) is approved and on sale.
+- Version quirk: the approved 1.0 release shipped a binary stamped 1.0.2, so
+  Apple requires every new binary to be 1.0.3 or higher.
 - The privacy policy is served by GitHub Pages from this repo's main branch:
   https://rajannagar.github.io/CueCam/privacy.html. Pushing to main updates the
   live page. Support URL on the listing: https://www.softcomputers.ca/contact
