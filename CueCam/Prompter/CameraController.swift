@@ -25,6 +25,13 @@ final class CameraController: NSObject, ObservableObject {
     nonisolated(unsafe) private var videoInput: AVCaptureDeviceInput?
     private var timer: Timer?
 
+    /// Keeps the preview upright and recordings level with the horizon when the
+    /// phone rotates. Rebuilt whenever the active camera changes.
+    private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
+    private var previewRotationObservation: NSKeyValueObservation?
+    private weak var previewLayer: AVCaptureVideoPreviewLayer?
+    private var notificationTokens: [NSObjectProtocol] = []
+
     // MARK: - Permissions & setup
 
     func configure() async {
@@ -36,12 +43,42 @@ final class CameraController: NSObject, ObservableObject {
             return
         }
         status = .configuring
+        observeSessionEvents()
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             sessionQueue.async { [weak self] in
                 self?.buildSession()
                 cont.resume()
             }
         }
+        refreshRotationCoordinator()
+    }
+
+    /// A phone call or Siri can take the camera or mic away mid-recording. Stop
+    /// the recording cleanly so the footage captured so far still gets saved,
+    /// instead of failing with a generic error.
+    private func observeSessionEvents() {
+        guard notificationTokens.isEmpty else { return }
+        let center = NotificationCenter.default
+        notificationTokens.append(center.addObserver(
+            forName: AVCaptureSession.wasInterruptedNotification, object: session, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, self.isRecording else { return }
+                self.message = "Recording stopped: the camera was interrupted."
+                self.toggleRecording()
+            }
+        })
+        notificationTokens.append(center.addObserver(
+            forName: AVCaptureSession.runtimeErrorNotification, object: session, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                if self.isRecording { self.toggleRecording() }
+                self.sessionQueue.async { [session = self.session] in
+                    if !session.isRunning { session.startRunning() }
+                }
+            }
+        })
     }
 
     private static func granted(for type: AVMediaType) async -> Bool {
@@ -82,9 +119,39 @@ final class CameraController: NSObject, ObservableObject {
     }
 
     func stop() {
+        for token in notificationTokens { NotificationCenter.default.removeObserver(token) }
+        notificationTokens = []
         sessionQueue.async { [session] in
             if session.isRunning { session.stopRunning() }
         }
+    }
+
+    // MARK: - Rotation
+
+    /// Called by CameraPreview once its layer exists, so preview rotation can
+    /// follow the device.
+    func attachPreview(_ layer: AVCaptureVideoPreviewLayer) {
+        previewLayer = layer
+        refreshRotationCoordinator()
+    }
+
+    private func refreshRotationCoordinator() {
+        guard let device = videoInput?.device else { return }
+        let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: previewLayer)
+        rotationCoordinator = coordinator
+        applyPreviewRotation(coordinator.videoRotationAngleForHorizonLevelPreview)
+        previewRotationObservation = coordinator.observe(
+            \.videoRotationAngleForHorizonLevelPreview, options: [.new]
+        ) { [weak self] coordinator, _ in
+            let angle = coordinator.videoRotationAngleForHorizonLevelPreview
+            Task { @MainActor in self?.applyPreviewRotation(angle) }
+        }
+    }
+
+    private func applyPreviewRotation(_ angle: CGFloat) {
+        guard let connection = previewLayer?.connection,
+              connection.isVideoRotationAngleSupported(angle) else { return }
+        connection.videoRotationAngle = angle
     }
 
     // MARK: - Switching camera (only when not recording)
@@ -101,7 +168,10 @@ final class CameraController: NSObject, ObservableObject {
                self.session.canAddInput(input) {
                 self.session.addInput(input)
                 self.videoInput = input
-                Task { @MainActor in self.position = newPosition }
+                Task { @MainActor in
+                    self.position = newPosition
+                    self.refreshRotationCoordinator()
+                }
             }
             self.session.commitConfiguration()
         }
@@ -121,6 +191,16 @@ final class CameraController: NSObject, ObservableObject {
         if let connection = movieOutput.connection(with: .video), connection.isVideoMirroringSupported {
             connection.automaticallyAdjustsVideoMirroring = false
             connection.isVideoMirrored = (position == .front)
+        }
+        // Stamp the file with the device's physical orientation at record start,
+        // so landscape recordings come out landscape (orientation is then locked
+        // for the duration of the clip, like the system Camera app).
+        if let coordinator = rotationCoordinator,
+           let connection = movieOutput.connection(with: .video) {
+            let angle = coordinator.videoRotationAngleForHorizonLevelCapture
+            if connection.isVideoRotationAngleSupported(angle) {
+                connection.videoRotationAngle = angle
+            }
         }
         movieOutput.startRecording(to: url, recordingDelegate: self)
         isRecording = true

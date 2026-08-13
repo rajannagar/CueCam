@@ -15,7 +15,9 @@ struct CameraTeleprompterView: View {
     @StateObject private var voice = VoiceFollow()
 
     @AppStorage("tp.speed") private var speed: Double = 60
-    @AppStorage("tp.fontSize") private var fontSize: Double = 44
+    // Camera mode keeps its own text size: over live video the text wants to be
+    // smaller than on a blank reading screen.
+    @AppStorage("tp.fontSizeCamera") private var fontSize: Double = 44
     @AppStorage("tp.mirror") private var mirror = false
     @AppStorage("tp.countdown") private var countdownEnabled = true
     @AppStorage("tp.font") private var fontRaw = PrompterFont.serif.rawValue
@@ -40,17 +42,32 @@ struct CameraTeleprompterView: View {
     private var theme: PrompterTheme { tm.selected }
     private var font: PrompterFont {
         let f = PrompterFont(rawValue: fontRaw) ?? .serif
-        return (f.isFree || purchases.isPro) ? f : .rounded
+        return (f.isFree || purchases.isPro) ? f : .serif
     }
     private var usingVoice: Bool { voiceFollow && purchases.isPro }
     private var usingVolume: Bool { volumeControl && purchases.isPro }
+    /// Below iOS 17.2 there is no capture-event API, so volume-button control
+    /// falls back to the KVO observer.
+    private var needsLegacyVolumeObserver: Bool {
+        if #available(iOS 17.2, *) { return false }
+        return true
+    }
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
 
             if camera.status == .ready {
-                CameraPreview(session: camera.session).ignoresSafeArea()
+                CameraPreview(controller: camera).ignoresSafeArea()
+            }
+
+            // Hardware volume buttons act as a record button while the capture
+            // session runs (supported API, no volume change, no HUD).
+            if usingVolume, #available(iOS 17.2, *) {
+                CaptureEventListener { tapRecord() }
+                    .frame(width: 1, height: 1)
+                    .accessibilityHidden(true)
+                    .allowsHitTesting(false)
             }
 
             // Text always white-ish over video for legibility, regardless of theme bg.
@@ -72,6 +89,7 @@ struct CameraTeleprompterView: View {
         }
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
+        .keepsScreenAwake()
         .task {
             engine.startLink()
             engine.speed = speed
@@ -79,15 +97,19 @@ struct CameraTeleprompterView: View {
             engine.voiceFollow = usingVoice
             engine.reset()
             await camera.configure()
-            if usingVolume {
+            if usingVolume && needsLegacyVolumeObserver {
                 volume.onPress = { tapRecord() }
                 volume.start(configuresSession: false)
             }
         }
         .onChange(of: focal) { _, v in engine.focalFraction = CGFloat(v); engine.reset() }
         .onChange(of: volumeControl) { _, _ in
-            if usingVolume { volume.onPress = { tapRecord() }; volume.start(configuresSession: false) }
-            else { volume.stop() }
+            if usingVolume && needsLegacyVolumeObserver {
+                volume.onPress = { tapRecord() }
+                volume.start(configuresSession: false)
+            } else {
+                volume.stop()
+            }
         }
         .onDisappear { engine.stopLink(); camera.stop(); voice.stop(); volume.stop() }
         .onChange(of: speed) { _, v in engine.speed = v }
@@ -124,18 +146,18 @@ struct CameraTeleprompterView: View {
     private var topBar: some View {
         VStack {
             HStack(spacing: 12) {
-                circleButton("xmark") { dismiss() }
+                circleButton("xmark", label: "Close") { dismiss() }
                 Spacer()
                 if camera.isRecording { recordingPill }
                 Spacer()
                 aspectButton
                 if camera.lastRecordingURL != nil && !camera.isRecording {
-                    circleButton("square.and.arrow.up") { showShare = true }
+                    circleButton("square.and.arrow.up", label: "Share last recording") { showShare = true }
                 }
-                circleButton("arrow.triangle.2.circlepath") { camera.switchCamera() }
+                circleButton("arrow.triangle.2.circlepath", label: "Switch camera") { camera.switchCamera() }
                     .disabled(camera.isRecording)
                     .opacity(camera.isRecording ? 0.35 : 1)
-                circleButton("slider.horizontal.3") { engine.isPlaying = false; showSettings = true }
+                circleButton("slider.horizontal.3", label: "Prompter settings") { engine.isPlaying = false; showSettings = true }
             }
             .padding(.horizontal, 16).padding(.top, 18)
             Spacer()
@@ -157,6 +179,7 @@ struct CameraTeleprompterView: View {
                 .background(.ultraThinMaterial, in: Capsule())
         }
         .buttonStyle(PressStyle())
+        .accessibilityLabel("Aspect ratio guide: \(guide.label)")
     }
 
     private var recordingPill: some View {
@@ -175,7 +198,7 @@ struct CameraTeleprompterView: View {
             Spacer()
             VStack(spacing: 18) {
                 HStack(alignment: .center, spacing: 28) {
-                    softButton("gobackward") { engine.reset() }
+                    softButton("gobackward", label: "Restart from the top") { engine.reset() }
                     recordButton
                     scrollToggle
                 }
@@ -209,6 +232,7 @@ struct CameraTeleprompterView: View {
         .buttonStyle(PressStyle())
         .disabled(camera.status != .ready)
         .opacity(camera.status == .ready ? 1 : 0.4)
+        .accessibilityLabel(camera.isRecording ? "Stop recording" : "Start recording")
     }
 
     private var scrollToggle: some View {
@@ -218,6 +242,7 @@ struct CameraTeleprompterView: View {
                 .frame(width: 56, height: 56).background(.white.opacity(0.12), in: Circle())
         }
         .buttonStyle(PressStyle())
+        .accessibilityLabel(engine.isPlaying ? "Pause scrolling" : "Start scrolling")
     }
 
     private var permissionOverlay: some View {
@@ -268,20 +293,22 @@ struct CameraTeleprompterView: View {
         }
     }
 
-    private func circleButton(_ name: String, action: @escaping () -> Void) -> some View {
+    private func circleButton(_ name: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: name).font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
                 .frame(width: 40, height: 40).background(.ultraThinMaterial, in: Circle())
         }
         .buttonStyle(PressStyle())
+        .accessibilityLabel(label)
     }
 
-    private func softButton(_ name: String, action: @escaping () -> Void) -> some View {
+    private func softButton(_ name: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: name).font(.system(size: 20, weight: .semibold)).foregroundStyle(.white)
                 .frame(width: 56, height: 56).background(.white.opacity(0.12), in: Circle())
         }
         .buttonStyle(PressStyle())
+        .accessibilityLabel(label)
     }
 
     // MARK: - Logic

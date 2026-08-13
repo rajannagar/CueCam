@@ -34,7 +34,7 @@ struct TeleprompterView: View {
     private var theme: PrompterTheme { tm.selected }
     private var font: PrompterFont {
         let f = PrompterFont(rawValue: fontRaw) ?? .serif
-        return (f.isFree || purchases.isPro) ? f : .rounded
+        return (f.isFree || purchases.isPro) ? f : .serif
     }
     private var usingVoice: Bool { voiceFollow && purchases.isPro }
     private var usingVolume: Bool { volumeControl && purchases.isPro }
@@ -63,6 +63,7 @@ struct TeleprompterView: View {
         }
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
+        .keepsScreenAwake()
         .onAppear {
             engine.startLink()
             engine.speed = speed
@@ -108,7 +109,7 @@ struct TeleprompterView: View {
     private var topBar: some View {
         VStack {
             HStack(spacing: 12) {
-                circleButton("xmark") { dismiss() }
+                circleButton("xmark", label: "Close") { dismiss() }
                 Spacer()
                 if usingVoice {
                     Label("Voice", systemImage: "waveform")
@@ -116,7 +117,7 @@ struct TeleprompterView: View {
                         .foregroundStyle(voice.isListening ? tm.accent : palette.textSecondary)
                 }
                 Spacer()
-                circleButton("slider.horizontal.3") { engine.isPlaying = false; showSettings = true }
+                circleButton("slider.horizontal.3", label: "Prompter settings") { engine.isPlaying = false; showSettings = true }
             }
             .padding(.horizontal, 16).padding(.top, 18)
             Spacer()
@@ -130,7 +131,7 @@ struct TeleprompterView: View {
             Spacer()
             VStack(spacing: 18) {
                 HStack(spacing: 24) {
-                    softButton("gobackward") { engine.reset() }
+                    softButton("gobackward", label: "Restart from the top") { engine.reset() }
                     playButton
                     speedReadout
                 }
@@ -161,6 +162,7 @@ struct TeleprompterView: View {
             .shadow(color: tm.accent.opacity(0.4), radius: 12, y: 4)
         }
         .buttonStyle(PressStyle())
+        .accessibilityLabel(engine.finished ? "Play again" : (engine.isPlaying ? "Pause" : "Play"))
     }
 
     private var speedReadout: some View {
@@ -172,6 +174,8 @@ struct TeleprompterView: View {
         }
         .frame(width: 56, height: 56)
         .background(palette.textPrimary.opacity(0.06), in: Circle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(usingVoice ? "Following your voice" : "Scroll speed \(Int(speed)) points per second")
     }
 
     private func sliderRow(icon: String, value: Binding<Double>, range: ClosedRange<Double>, label: () -> String) -> some View {
@@ -182,20 +186,22 @@ struct TeleprompterView: View {
         }
     }
 
-    private func circleButton(_ name: String, action: @escaping () -> Void) -> some View {
+    private func circleButton(_ name: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: name).font(.system(size: 15, weight: .semibold)).foregroundStyle(palette.textPrimary)
                 .frame(width: 40, height: 40).background(.ultraThinMaterial, in: Circle())
         }
         .buttonStyle(PressStyle())
+        .accessibilityLabel(label)
     }
 
-    private func softButton(_ name: String, action: @escaping () -> Void) -> some View {
+    private func softButton(_ name: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: name).font(.system(size: 20, weight: .semibold)).foregroundStyle(palette.textPrimary)
                 .frame(width: 56, height: 56).background(palette.textPrimary.opacity(0.08), in: Circle())
         }
         .buttonStyle(PressStyle())
+        .accessibilityLabel(label)
     }
 
     // MARK: - Interaction

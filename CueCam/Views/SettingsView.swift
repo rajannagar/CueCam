@@ -72,6 +72,8 @@ struct SettingsView: View {
                         .buttonStyle(.plain)
                         .disabled(matchIcon)
                         .opacity(matchIcon ? 0.4 : 1)
+                        .accessibilityLabel("\(option.title) app icon")
+                        .accessibilityAddTraits(currentIcon == option ? .isSelected : [])
                     }
                 }
 
@@ -87,6 +89,7 @@ struct SettingsView: View {
                     }
                     Spacer()
                     Toggle("", isOn: $matchIcon).labelsHidden().tint(palette.accent)
+                        .accessibilityLabel("Match icon to theme")
                 }
                 .onChange(of: matchIcon) { _, on in
                     if on { applyAppIcon(AppIconOption.matching(tm.selected)); currentIcon = AppIconOption.matching(tm.selected) }

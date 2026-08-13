@@ -21,6 +21,14 @@ final class VoiceFollow: NSObject, ObservableObject {
     private var matchedIndex = 0
     private var spokenConsumed = 0
 
+    /// True while the caller wants us listening. Recognition tasks end on their
+    /// own (after long speech or silence), so we restart as long as this is set;
+    /// otherwise a long read would silently stall mid-script.
+    private var wantListening = false
+    private var restartTask: Task<Void, Never>?
+    private var lastStartDate = Date.distantPast
+    private var rapidRestarts = 0
+
     func prepare(script: String) {
         scriptWords = script
             .lowercased()
@@ -45,9 +53,15 @@ final class VoiceFollow: NSObject, ObservableObject {
     }
 
     func start() {
+        wantListening = true
+        beginListening()
+    }
+
+    private func beginListening() {
         guard authorized, !isListening else { return }
         guard let recognizer, recognizer.isAvailable else {
             errorText = "Speech recognition isn't available right now."
+            wantListening = false
             return
         }
 
@@ -81,6 +95,7 @@ final class VoiceFollow: NSObject, ObservableObject {
         }
 
         isListening = true
+        lastStartDate = Date()
         task = recognizer.recognitionTask(with: request) { [weak self] result, error in
             guard let self else { return }
             if let result {
@@ -89,12 +104,48 @@ final class VoiceFollow: NSObject, ObservableObject {
                 }
             }
             if error != nil || (result?.isFinal ?? false) {
-                Task { @MainActor in self.stop() }
+                Task { @MainActor in self.handleSessionEnd() }
             }
         }
     }
 
     func stop() {
+        wantListening = false
+        restartTask?.cancel()
+        restartTask = nil
+        teardown()
+    }
+
+    /// The recognition task ended on its own. Tear down, and if the reader still
+    /// wants voice-follow, spin the recognizer back up. Progress is preserved:
+    /// `matchedIndex` carries across restarts and `updateProgress` already
+    /// resyncs when a fresh transcript starts from zero.
+    private func handleSessionEnd() {
+        teardown()
+        guard wantListening else { return }
+
+        // If sessions keep dying within seconds, something is actually wrong
+        // (recognizer busy, mic contention). Give up instead of looping.
+        if Date().timeIntervalSince(lastStartDate) < 2 {
+            rapidRestarts += 1
+        } else {
+            rapidRestarts = 0
+        }
+        if rapidRestarts >= 5 {
+            wantListening = false
+            errorText = "Voice-follow stopped. Tap play to start it again."
+            return
+        }
+
+        restartTask?.cancel()
+        restartTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            guard let self, self.wantListening, !Task.isCancelled else { return }
+            self.beginListening()
+        }
+    }
+
+    private func teardown() {
         guard isListening else { return }
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)

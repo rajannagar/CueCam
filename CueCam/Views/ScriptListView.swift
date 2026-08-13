@@ -33,6 +33,7 @@ struct ScriptListView: View {
                     } label: {
                         Image(systemName: "gearshape")
                     }
+                    .accessibilityLabel("Settings")
                 }
                 ToolbarItem(placement: .principal) {
                     Text("CueCam")
@@ -46,6 +47,7 @@ struct ScriptListView: View {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
                     }
+                    .accessibilityLabel("New script")
                 }
             }
             .sheet(item: $editingScript) { script in
@@ -215,6 +217,7 @@ private struct ScriptCard: View {
                             .background(palette.textPrimary.opacity(0.08), in: Circle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Read on screen")
                     Button(action: onFilm) {
                         Image(systemName: "camera.fill")
                             .font(.system(size: 16, weight: .semibold))
@@ -223,6 +226,7 @@ private struct ScriptCard: View {
                             .background(tm.accentGradient, in: Circle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Record with camera")
                 }
             }
 

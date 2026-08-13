@@ -46,6 +46,7 @@ struct PrompterPreferences: View {
                 if purchases.isPro {
                     ColorPicker("", selection: customColorBinding, supportsOpacity: false)
                         .labelsHidden()
+                        .accessibilityLabel("Text color")
                     Text(textColorHex.isEmpty ? "Theme default" : "Custom")
                         .font(.subheadline).foregroundStyle(palette.textSecondary)
                     Spacer()
@@ -75,6 +76,7 @@ struct PrompterPreferences: View {
                 Image(systemName: "arrow.up.and.down.text.horizontal")
                     .foregroundStyle(tm.accent).frame(width: 26)
                 Slider(value: $focal, in: 0.2...0.6).tint(tm.accent)
+                    .accessibilityLabel("Reading line position")
                 Text("\(Int(focal * 100))%")
                     .font(.caption.monospacedDigit()).foregroundStyle(palette.textSecondary)
                     .frame(width: 40, alignment: .trailing)
@@ -133,6 +135,8 @@ struct PrompterPreferences: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("\(theme.title) theme")
+                    .accessibilityAddTraits(tm.selected == theme ? .isSelected : [])
                 }
             }
         }
@@ -191,6 +195,8 @@ struct PrompterPreferences: View {
                         .opacity(locked ? 0.6 : 1)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("\(f.title) font\(locked ? ", requires Pro" : "")")
+                    .accessibilityAddTraits(fontRaw == f.rawValue ? .isSelected : [])
                 }
             }
         }
@@ -221,6 +227,7 @@ struct PrompterPreferences: View {
             Text(title).font(.subheadline.weight(.medium)).foregroundStyle(palette.textPrimary)
             Spacer()
             Toggle("", isOn: isOn).labelsHidden().tint(tm.accent)
+                .accessibilityLabel(title)
         }
         .padding(.vertical, 6)
     }
@@ -232,6 +239,7 @@ struct PrompterPreferences: View {
             Spacer()
             if purchases.isPro {
                 Toggle("", isOn: isOn).labelsHidden().tint(tm.accent)
+                    .accessibilityLabel(title)
             } else {
                 Button { showPaywall = true } label: {
                     HStack(spacing: 4) {

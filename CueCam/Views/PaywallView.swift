@@ -41,6 +41,7 @@ struct PaywallView: View {
                     .foregroundStyle(palette.textSecondary)
                     .padding(12)
             }
+            .accessibilityLabel("Close")
         }
         .padding(.trailing, 8)
         .padding(.top, 8)

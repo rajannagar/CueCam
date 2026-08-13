@@ -3,12 +3,13 @@ import AVFoundation
 
 /// SwiftUI wrapper around AVCaptureVideoPreviewLayer.
 struct CameraPreview: UIViewRepresentable {
-    let session: AVCaptureSession
+    let controller: CameraController
 
     func makeUIView(context: Context) -> PreviewView {
         let view = PreviewView()
-        view.videoPreviewLayer.session = session
+        view.videoPreviewLayer.session = controller.session
         view.videoPreviewLayer.videoGravity = .resizeAspectFill
+        controller.attachPreview(view.videoPreviewLayer)
         return view
     }
 

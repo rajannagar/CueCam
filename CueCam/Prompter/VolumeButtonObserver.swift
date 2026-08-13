@@ -1,6 +1,29 @@
 import SwiftUI
 import AVFoundation
+import AVKit
 import MediaPlayer
+
+/// The supported way to catch hardware volume-button presses while a capture
+/// session runs (iOS 17.2+). The system routes the press here, does not change
+/// the volume, and shows no HUD. Camera mode prefers this; the KVO observer
+/// below stays as the screen-mode path (no capture session there) and as the
+/// fallback on iOS 17.0 and 17.1.
+@available(iOS 17.2, *)
+struct CaptureEventListener: UIViewRepresentable {
+    let onPress: () -> Void
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        let interaction = AVCaptureEventInteraction { event in
+            if event.phase == .ended { onPress() }
+        }
+        interaction.isEnabled = true
+        view.addInteraction(interaction)
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
 
 /// Detects hardware volume-button presses and reports them, without changing the
 /// actual volume or showing the system volume HUD. Used for hands-free play/pause.
