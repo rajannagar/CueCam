@@ -23,6 +23,7 @@ struct TeleprompterView: View {
     @AppStorage("tp.voiceFollow") private var voiceFollow = false
     @AppStorage("tp.karaoke") private var karaoke = false
     @AppStorage("tp.volumeControl") private var volumeControl = false
+    @AppStorage("tp.reviewMoments") private var reviewMoments = 0
 
     @StateObject private var volume = VolumeButtonObserver()
 
@@ -86,6 +87,9 @@ struct TeleprompterView: View {
         .onChange(of: engine.isPlaying) { _, playing in
             syncVoice(playing: playing)
             scheduleHide()
+        }
+        .onChange(of: engine.finished) { _, finished in
+            if finished { reviewMoments += 1 }   // a completed read is a good moment
         }
         .sheet(isPresented: $showSettings) {
             PrompterSettingsSheet()

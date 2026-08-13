@@ -1,10 +1,17 @@
 import SwiftUI
+import StoreKit
 
 struct ScriptListView: View {
     @Environment(\.palette) private var palette
+    @Environment(\.requestReview) private var requestReview
     @EnvironmentObject private var store: ScriptStore
     @EnvironmentObject private var purchases: PurchaseManager
     @EnvironmentObject private var tm: ThemeManager
+
+    /// Good sessions so far (a finished read or a saved recording), counted by
+    /// the prompter views. Used to time the rating ask.
+    @AppStorage("tp.reviewMoments") private var reviewMoments = 0
+    @AppStorage("tp.reviewAskedAt") private var reviewAskedAt = 0
 
     @State private var editingScript: Script?
     @State private var playingScript: Script?
@@ -53,10 +60,10 @@ struct ScriptListView: View {
             .sheet(item: $editingScript) { script in
                 ScriptEditorView(script: script)
             }
-            .fullScreenCover(item: $playingScript) { script in
+            .fullScreenCover(item: $playingScript, onDismiss: maybeRequestReview) { script in
                 TeleprompterView(script: script)
             }
-            .fullScreenCover(item: $filmingScript) { script in
+            .fullScreenCover(item: $filmingScript, onDismiss: maybeRequestReview) { script in
                 CameraTeleprompterView(script: script)
             }
             .sheet(isPresented: $showPaywall) {
@@ -184,6 +191,17 @@ struct ScriptListView: View {
 
     private func shareAsPDF(_ script: Script) {
         if let url = ScriptPDF.make(from: script) { shareItems = [url] }
+    }
+
+    /// Ask for a rating only back on the home screen after a good session,
+    /// never mid-task: once after the second good moment, once more after the
+    /// twelfth. The system also caps how often the prompt actually shows.
+    private func maybeRequestReview() {
+        let shouldAsk = (reviewMoments >= 2 && reviewAskedAt == 0)
+            || (reviewMoments >= 12 && reviewAskedAt < 12)
+        guard shouldAsk else { return }
+        reviewAskedAt = reviewMoments
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { requestReview() }
     }
 }
 

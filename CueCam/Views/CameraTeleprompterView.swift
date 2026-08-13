@@ -28,6 +28,7 @@ struct CameraTeleprompterView: View {
     @AppStorage("tp.karaoke") private var karaoke = false
     @AppStorage("tp.aspect") private var aspectRaw = AspectGuide.off.rawValue
     @AppStorage("tp.volumeControl") private var volumeControl = false
+    @AppStorage("tp.reviewMoments") private var reviewMoments = 0
 
     @StateObject private var volume = VolumeButtonObserver()
 
@@ -127,6 +128,7 @@ struct CameraTeleprompterView: View {
         }
         .onChange(of: camera.lastSavedOK) { _, v in
             guard v != nil else { return }
+            if v == true { reviewMoments += 1 }   // a saved recording is a good moment
             withAnimation { showToast = true }
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { withAnimation { showToast = false } }
         }
