@@ -1,5 +1,18 @@
 # CueCam App Store Listing
 
+## Live status (checked August 13, 2026)
+Shipped June 10, 2026 as version 1.0:
+https://apps.apple.com/us/app/cuecam-teleprompter/id6777586422
+
+What is live matches this file: the primary name, subtitle, and description
+below are on the listing word for word, with categories Productivity +
+Photo & Video, age 4+, "Data Not Collected", and CueCam Pro at $6.99.
+All 7 iPhone screenshots are up; the iPad set is missing `02-voice`.
+The app preview video was never uploaded (polish it first, storyboard below),
+and no marketing URL is set on the listing.
+
+---
+
 Copy is written for the two core audiences: short-form video creators
 (TikTok / Reels / YouTube) and people giving talks, vows, or speeches.
 Character limits noted in [brackets]; everything below is within limit.

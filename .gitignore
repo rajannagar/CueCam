@@ -21,3 +21,7 @@ xcuserdata/
 *.ipa
 *.dSYM.zip
 *.dSYM
+
+# Local tooling and marketing intermediates
+.claude/
+marketing/ipad/raw/

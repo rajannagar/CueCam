@@ -6,6 +6,9 @@ runs on-device. No server, no accounts, no ongoing costs.
 
 Built in SwiftUI with a StoreKit 2 one-time unlock.
 
+**Live on the App Store since June 10, 2026:**
+[CueCam: Teleprompter](https://apps.apple.com/us/app/cuecam-teleprompter/id6777586422) (app ID 6777586422).
+
 ## Features
 - **Screen mode** read on a calm, full-screen prompter that looks like an e-reader.
 - **Camera mode** the script scrolls over the live camera while you record. The text is
@@ -46,12 +49,23 @@ Built in SwiftUI with a StoreKit 2 one-time unlock.
 3. Run. "Unlock Pro" now completes a sandbox purchase. Reset via Debug > StoreKit >
    Manage Transactions. There is also a DEBUG-only Pro toggle in Settings.
 
-## Submit to the App Store
-1. In App Store Connect, create the app and an In-App Purchase:
-   - Type: Non-Consumable, Product ID: `com.rajannagar.CueCam.pro`, your price.
-2. Add the listing copy from `STORE_LISTING.md` and the screenshots from `marketing/`.
-3. In Xcode: Product > Archive, then Distribute App > App Store Connect.
-4. Submit for review.
+## App Store status
+- Live since June 10, 2026 as version 1.0. The CueCam Pro unlock
+  (`com.rajannagar.CueCam.pro`, $6.99) is approved and on sale.
+- The privacy policy is served by GitHub Pages from this repo's main branch:
+  https://rajannagar.github.io/CueCam/privacy.html. Pushing to main updates the
+  live page. Support URL on the listing: https://www.softcomputers.ca/contact
+- Not on the listing yet: the app preview video (`marketing/CueCam-preview.mov`,
+  polish it first per `STORE_LISTING.md`) and the `02-voice` iPad screenshot.
+- Note: the shipped 1.0 binary predates `PrivacyInfo.xcprivacy`; the manifest
+  ships with the next update.
+
+## Ship an update
+1. Bump `MARKETING_VERSION` in the project (build number restarts per version).
+2. Archive and upload: Product > Archive, then Distribute App > App Store
+   Connect (or `xcodebuild` with the ASC API key).
+3. In App Store Connect, create the new version, paste the What's New text,
+   attach the build, and Submit for Review.
 
 ## Project layout
 ```
