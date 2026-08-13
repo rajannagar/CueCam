@@ -29,14 +29,39 @@ final class VoiceFollow: NSObject, ObservableObject {
     private var lastStartDate = Date.distantPast
     private var rapidRestarts = 0
 
-    func prepare(script: String) {
+    /// Feeding the script's own vocabulary to the recognizer makes it much more
+    /// likely to hear those exact words. Apple caps the useful size, so keep it
+    /// to the first 100 unique words.
+    private var contextWords: [String] = []
+
+    /// - Parameter startProgress: where the reader already is (0...1). Seeding
+    ///   the match cursor here is what keeps voice-follow working after a
+    ///   pause, a drag, or a resume mid-script; starting from zero would leave
+    ///   it waiting forever for words the reader said minutes ago.
+    func prepare(script: String, startProgress: Double = 0) {
         scriptWords = script
             .lowercased()
             .components(separatedBy: CharacterSet.alphanumerics.inverted)
             .filter { !$0.isEmpty }
-        matchedIndex = 0
+        var unique: [String] = []
+        var seen = Set<String>()
+        for w in scriptWords where !seen.contains(w) {
+            seen.insert(w)
+            unique.append(w)
+            if unique.count >= 100 { break }
+        }
+        contextWords = unique
         spokenConsumed = 0
-        progress = 0
+        reseed(to: startProgress)
+    }
+
+    /// Jump the match cursor to a scroll position (0...1), e.g. after the
+    /// reader drags the text while voice-follow is running.
+    func reseed(to startProgress: Double) {
+        guard !scriptWords.isEmpty else { matchedIndex = 0; progress = 0; return }
+        let clamped = min(1, max(0, startProgress))
+        matchedIndex = min(scriptWords.count, Int(Double(scriptWords.count) * clamped))
+        progress = Double(matchedIndex) / Double(scriptWords.count)
     }
 
     func requestAuthorization() async {
@@ -68,6 +93,8 @@ final class VoiceFollow: NSObject, ObservableObject {
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
         request.requiresOnDeviceRecognition = true
+        request.taskHint = .dictation
+        request.contextualStrings = contextWords
         self.request = request
 
         do {
@@ -174,9 +201,9 @@ final class VoiceFollow: NSObject, ObservableObject {
         // words, and consuming all new words (not just the last) keeps it in step.
         while spokenConsumed < spoken.count {
             let word = spoken[spokenConsumed]
-            let window = min(matchedIndex + 6, scriptWords.count)
+            let window = min(matchedIndex + 8, scriptWords.count)
             if matchedIndex < window {
-                for i in matchedIndex..<window where scriptWords[i] == word {
+                for i in matchedIndex..<window where matches(scriptWords[i], word) {
                     matchedIndex = i + 1
                     break
                 }
@@ -184,6 +211,15 @@ final class VoiceFollow: NSObject, ObservableObject {
             spokenConsumed += 1
         }
         progress = Double(matchedIndex) / Double(scriptWords.count)
+    }
+
+    /// Exact match, or a shared 4-letter stem on longer words so "recording"
+    /// still matches "record" and small misrecognitions don't stall the scroll.
+    private func matches(_ scriptWord: String, _ spokenWord: String) -> Bool {
+        if scriptWord == spokenWord { return true }
+        if scriptWord.count >= 5, spokenWord.count >= 5,
+           scriptWord.prefix(4) == spokenWord.prefix(4) { return true }
+        return false
     }
 }
 

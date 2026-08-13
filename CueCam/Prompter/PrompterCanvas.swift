@@ -24,6 +24,10 @@ struct PrompterCanvas: View {
             focalGuides
             if let n = engine.countdown { countdownOverlay(n) }
         }
+        // The script is one tall text block extending far beyond the screen.
+        // Clip that overflow (generously, so nothing visible is cut at the safe
+        // areas) or it bleeds over other screens during the dismiss transition.
+        .clipShape(Rectangle().inset(by: -150))
     }
 
     private var focalGuides: some View {
@@ -102,7 +106,9 @@ private struct ScrollingText: View {
             .foregroundStyle(textColor)
             .lineSpacing(fontSize * 0.32)
             .multilineTextAlignment(.center)
-            .shadow(color: .black.opacity(dimText < 1 ? 0.7 : 0), radius: 6, y: 1)
+            // Legibility shadow over live video only. Kept tight: a wide shadow
+            // on a screen-sized text layer is a real per-frame GPU cost.
+            .shadow(color: .black.opacity(dimText < 1 ? 0.7 : 0), radius: dimText < 1 ? 3 : 0, y: 1)
             .fixedSize(horizontal: false, vertical: true)
             .frame(width: width - 48, alignment: .top)
             .padding(.horizontal, 24)

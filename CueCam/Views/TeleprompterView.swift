@@ -109,7 +109,13 @@ struct TeleprompterView: View {
     private var topBar: some View {
         VStack {
             HStack(spacing: 12) {
-                circleButton("xmark", label: "Close") { dismiss() }
+                circleButton("xmark", label: "Close") {
+                    // Freeze the prompter before the cover animates away, so the
+                    // huge text layer is not mid-update during the transition.
+                    engine.stopLink()
+                    voice.stop()
+                    dismiss()
+                }
                 Spacer()
                 if usingVoice {
                     Label("Voice", systemImage: "waveform")
@@ -212,7 +218,11 @@ struct TeleprompterView: View {
                 if dragBase == nil { dragBase = engine.offset; engine.isPlaying = false; engine.cancelCountdown(); engine.markEngaged(); showControls() }
                 engine.offset = (dragBase ?? engine.offset) + value.translation.height
             }
-            .onEnded { _ in dragBase = nil; engine.finished = false }
+            .onEnded { _ in
+                dragBase = nil
+                engine.finished = false
+                if usingVoice { voice.reseed(to: Double(engine.progress)) }
+            }
     }
 
     private func handleTap() {
@@ -228,7 +238,9 @@ struct TeleprompterView: View {
         if playing {
             Task {
                 if !voice.authorized { await voice.requestAuthorization() }
-                voice.prepare(script: script.body)
+                // Seed from the current scroll position: resuming mid-script
+                // must not wait for words the reader said minutes ago.
+                voice.prepare(script: script.body, startProgress: Double(engine.progress))
                 voice.start()
             }
         } else {

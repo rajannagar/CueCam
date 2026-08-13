@@ -45,8 +45,10 @@ private struct RootContainer: View {
             }
         }
         .task {
-            try? await Task.sleep(nanoseconds: 1_900_000_000)
-            withAnimation(.easeInOut(duration: 0.55)) { showSplash = false }
+            // Long enough to read the wordmark, short enough that launching
+            // into your script never feels slow.
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            withAnimation(.easeInOut(duration: 0.45)) { showSplash = false }
         }
         .onChange(of: tm.selected) { _, theme in
             if matchIcon { applyAppIcon(AppIconOption.matching(theme)) }

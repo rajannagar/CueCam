@@ -103,8 +103,11 @@ final class PrompterEngine: NSObject, ObservableObject {
             let target = startOffset - CGFloat(p) * (startOffset - endOffset)
             let delta = target - offset                 // negative => scroll up
             if delta < 0 {
-                let eased = delta * min(1, CGFloat(dt) * 2.5)
-                let maxStep = CGFloat(max(speed, 100)) * 1.8 * CGFloat(dt)
+                // Close most of the gap within about 0.15s so the text visibly
+                // tracks the speaker, but cap the sprint so a recognition jump
+                // glides instead of teleporting.
+                let eased = delta * min(1, CGFloat(dt) * 6.5)
+                let maxStep = CGFloat(max(speed, 140)) * 3.0 * CGFloat(dt)
                 offset += max(eased, -maxStep)
             }
         } else {
